@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1D6A80">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="車両ノート">
+<meta name="robots" content="noindex">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-180.png">
+<style>
+:root{color-scheme:light}
+body{margin:0;-webkit-text-size-adjust:100%;padding-top:env(safe-area-inset-top,0px)}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<title>車両ノート</title>
+<style>
+:root{
+  --main:#1D6A80; --main2:#E8F1F4; --bg:#F6F7F8; --card:#fff; --ink:#1E2328; --sub:#5F6B73; --line:#DDE2E5;
+  --warn:#B3261E; --warnbg:#FCEDEC; --ok:#1E7B46; --okbg:#E7F4EC; --note:#8A5A00; --notebg:#FFF6E0;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic UI","Meiryo",sans-serif;font-size:16px;line-height:1.55}
+button,input,select,textarea{font:inherit;color:inherit}
+.wrap{max-width:560px;margin:0 auto;padding:0 14px 90px}
+header{background:var(--main);color:#fff;padding:10px 14px;position:sticky;top:0;z-index:5}
+header .row{max-width:560px;margin:0 auto;display:flex;align-items:center;gap:10px}
+header h1{font-size:18px;margin:0;flex:0 0 auto}
+header select{flex:1;min-width:0;border:0;border-radius:8px;padding:7px 8px;background:#fff;color:var(--ink);font-size:15px}
+nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);display:flex;z-index:6;padding-bottom:env(safe-area-inset-bottom,0px)}
+nav button{flex:1;border:0;background:none;padding:9px 0 10px;font-size:13px;color:var(--sub)}
+nav button b{display:block;font-size:20px;line-height:1.1}
+nav button.on{color:var(--main);font-weight:700}
+h2{font-size:17px;margin:18px 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin:12px 0}
+.field{margin:10px 0}
+.field label{display:block;font-size:14px;color:var(--sub);margin-bottom:3px}
+.field input,.field select,.field textarea{width:100%;border:1px solid #C5CDD2;border-radius:8px;padding:10px;background:#fff;font-size:17px}
+.field input:focus{outline:2px solid var(--main);border-color:var(--main)}
+.two{display:flex;gap:10px}.two>.field{flex:1;min-width:0}
+.unit{position:relative}.unit input{padding-right:48px}.unit span{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--sub);font-size:14px}
+.btn{display:block;width:100%;border:0;border-radius:10px;padding:13px;font-size:17px;font-weight:700;background:var(--main);color:#fff;margin:10px 0}
+.btn.sub{background:var(--main2);color:var(--main)}
+.btn.red{background:var(--warnbg);color:var(--warn)}
+.btn:disabled{opacity:.5}
+.small{font-size:13px;color:var(--sub)}
+.check{display:flex;align-items:center;gap:10px;font-size:17px;padding:10px 0}
+.check input{width:24px;height:24px}
+.msg{border-radius:8px;padding:9px 11px;margin:8px 0;font-size:14px}
+.msg.warn{background:var(--warnbg);color:var(--warn)}
+.msg.ok{background:var(--okbg);color:var(--ok)}
+.msg.note{background:var(--notebg);color:var(--note)}
+.prev{background:var(--main2);border-radius:8px;padding:8px 10px;font-size:14px;margin-top:6px}
+.photo{display:flex;gap:12px;align-items:center}
+.photo img{width:72px;height:96px;object-fit:cover;border-radius:6px;border:1px solid var(--line)}
+.num{font-variant-numeric:tabular-nums}
+.big{font-size:28px;font-weight:700}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stats .card{margin:0;padding:12px}
+.stats .k{font-size:13px;color:var(--sub)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:7px 4px;border-bottom:1px solid var(--line);text-align:right}
+th{color:var(--sub);font-weight:400;font-size:12px}
+th:first-child,td:first-child{text-align:left}
+.rec{display:flex;align-items:center;gap:10px;padding:11px 2px;border-bottom:1px solid var(--line);cursor:pointer}
+.rec:last-child{border-bottom:0}
+.rec .d{flex:0 0 74px;font-weight:700}
+.rec .m{flex:1;min-width:0;font-size:14px}
+.rec .e{flex:0 0 auto;text-align:right;font-size:14px}
+.tag{display:inline-block;font-size:11px;border-radius:4px;padding:0 5px;background:var(--main2);color:var(--main);margin-left:4px;vertical-align:1px}
+.tag.p{background:#EEE;color:#666}
+.user{display:flex;justify-content:space-between;gap:8px;padding:11px 2px;border-bottom:1px solid var(--line);cursor:pointer}
+details summary{cursor:pointer;color:var(--sub);font-size:13px}
+pre{white-space:pre-wrap;font-size:12px;background:#F2F4F5;padding:8px;border-radius:6px;max-height:240px;overflow:auto}
+#busy{position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;z-index:20}
+#busy div{background:#fff;border-radius:12px;padding:18px 22px;font-size:16px;max-width:80%;text-align:center}
+#dlg{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:15;display:flex;flex-direction:column}
+#dlg .top{display:flex;justify-content:flex-end;padding:10px}
+#dlg .top button{background:#fff;border:0;border-radius:8px;padding:8px 14px;font-size:16px}
+#dlg .body{flex:1;overflow:auto;padding:0 10px 20px;text-align:center}
+#dlg img{max-width:100%}
+.login{max-width:420px;margin:40px auto}
+.login h1{color:var(--main);text-align:center;font-size:26px;margin:10px 0 4px}
+.empty{text-align:center;color:var(--sub);padding:24px 0}
+.ro{background:var(--notebg);color:var(--note);border-radius:8px;padding:8px 10px;font-size:14px;margin:10px 0}
+</style>
+
+<!-- ログイン -->
+<div id="vLogin" class="wrap" hidden>
+  <div class="login">
+    <h1>車両ノート</h1>
+    <p class="small" style="text-align:center;margin:0 0 16px">給油・燃費の記録</p>
+    <div class="card">
+      <div class="field"><label for="lId">利用者ID</label><input id="lId" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false"></div>
+      <div class="field"><label for="lPass">パスワード</label><input id="lPass" type="password" autocomplete="current-password"></div>
+      <div id="lMsg"></div>
+      <button class="btn" id="lBtn">ログイン</button>
+      <p class="small">一度ログインすると、この端末が覚えます（次からは入力不要）。<br>パスワードを忘れたときは、管理者（小松）に「パスワードを戻して」と伝えてください。</p>
+    </div>
+    <div class="msg note">記録とレシートの写真は、管理者（小松）のGoogleドライブに保存されます。ほかの利用者からは見えません。</div>
+  </div>
+</div>
+
+<!-- 初めてのパスワード変更 -->
+<div id="vChange" class="wrap" hidden>
+  <div class="login">
+    <h1>パスワードを決める</h1>
+    <p class="small" style="text-align:center">初めてのログインなので、自分だけのパスワードに変えてください。</p>
+    <div class="card">
+      <div class="field"><label for="cP1">新しいパスワード（6文字以上）</label><input id="cP1" type="password" autocomplete="new-password"></div>
+      <div class="field"><label for="cP2">もう一度</label><input id="cP2" type="password" autocomplete="new-password"></div>
+      <div class="msg note">記録とレシートの写真は、管理者（小松）のGoogleドライブのスプレッドシートに保存されます。管理者は内容を見ることができます。パスワードは暗号の形（ハッシュ）にして保存するので、管理者にも分かりません。</div>
+      <label class="check"><input type="checkbox" id="cAgree">上のことを分かったうえで使います</label>
+      <div id="cMsg"></div>
+      <button class="btn" id="cBtn">決めて始める</button>
+    </div>
+  </div>
+</div>
+
+<!-- 本体 -->
+<div id="vMain" hidden>
+  <header><div class="row"><h1>車両ノート</h1><select id="carSel" aria-label="車両をえらぶ"></select></div></header>
+  <div class="wrap">
+
+    <!-- 給油を記録 -->
+    <section id="tFuel">
+      <div id="noCar" class="card" hidden>
+        <h2 style="margin-top:0">まず車両を登録します</h2>
+        <div class="field"><label for="nCarKind">種類</label><select id="nCarKind"><option value="車">🚗 車</option><option value="バイク">🏍 バイク</option></select></div>
+        <div class="field"><label for="nCarName">名前（例：プリウス、カブ）</label><input id="nCarName"></div>
+        <div class="field"><label for="nCarPlate">ナンバー（なくてもよい）</label><input id="nCarPlate"></div>
+        <button class="btn" id="nCarBtn">登録する</button>
+      </div>
+      <div id="fuelForm">
+        <h2 id="fTitle">給油を記録</h2>
+        <div class="card">
+          <div class="photo">
+            <img id="fImg" alt="レシートの写真" hidden>
+            <div style="flex:1">
+              <label class="btn sub" style="margin:0;text-align:center;cursor:pointer">📷 レシートを撮る・選ぶ<input type="file" id="fFile" accept="image/*" hidden></label>
+              <div class="small" id="fPhotoNote" style="margin-top:6px">写真から日付・給油量・単価・金額を読み取ります（なくても手で入れられます）</div>
+            </div>
+          </div>
+          <div id="fOcrMsg"></div>
+          <details id="fRawBox" hidden><summary>読み取った文字を見る</summary><pre id="fRaw"></pre></details>
+        </div>
+        <div class="card">
+          <div class="field"><label for="fDate">日付</label><input id="fDate" type="date"></div>
+          <div class="field"><label for="fOdo">走行距離（メーターの数字）</label><div class="unit"><input id="fOdo" type="number" inputmode="numeric" min="0" step="1"><span>km</span></div>
+            <div class="prev" id="fPrev"></div><div id="fOdoMsg"></div></div>
+          <div class="two">
+            <div class="field"><label for="fLit">給油量</label><div class="unit"><input id="fLit" type="number" inputmode="decimal" min="0" step="0.01"><span>L</span></div></div>
+            <div class="field"><label for="fPrice">単価</label><div class="unit"><input id="fPrice" type="number" inputmode="decimal" min="0" step="0.1"><span>円/L</span></div></div>
+          </div>
+          <div class="field"><label for="fAmt">金額</label><div class="unit"><input id="fAmt" type="number" inputmode="numeric" min="0" step="1"><span>円</span></div></div>
+          <div id="fCalcMsg"></div>
+          <label class="check"><input type="checkbox" id="fFull" checked>満タンにした</label>
+          <div class="small" style="margin:-6px 0 6px">燃費は満タンのときに計算します。満タンでない給油は、次の満タンのときにまとめて計算します。</div>
+          <div class="field"><label for="fMemo">メモ（なくてもよい）</label><input id="fMemo" placeholder="スタンドの名前など"></div>
+          <div id="fMsg"></div>
+          <button class="btn" id="fSave">保存する</button>
+          <button class="btn sub" id="fCancel" hidden>やめる</button>
+          <button class="btn red" id="fDel" hidden>この記録を消す</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 記録の一覧 -->
+    <section id="tList" hidden>
+      <h2>給油の記録</h2>
+      <div class="card" id="listBox"></div>
+    </section>
+
+    <!-- 燃費・集計 -->
+    <section id="tStats" hidden><div id="statsBox"></div></section>
+
+    <!-- 設定 -->
+    <section id="tSet" hidden>
+      <h2>車両の登録</h2>
+      <div class="card" id="carList"></div>
+      <div class="card">
+        <div class="small" id="sCarCount" style="margin-bottom:4px"></div>
+        <div class="field"><label for="sCarKind">追加する種類</label><select id="sCarKind"><option value="車">🚗 車</option><option value="バイク">🏍 バイク</option></select></div>
+        <div class="field"><label for="sCarName">名前</label><input id="sCarName"></div>
+        <div class="field"><label for="sCarPlate">ナンバー（なくてもよい）</label><input id="sCarPlate"></div>
+        <button class="btn sub" id="sCarAdd">追加する</button>
+      </div>
+      <h2>パスワードを変える</h2>
+      <div class="card">
+        <div class="field"><label for="sOld">今のパスワード</label><input id="sOld" type="password" autocomplete="current-password"></div>
+        <div class="field"><label for="sNew1">新しいパスワード（6文字以上）</label><input id="sNew1" type="password" autocomplete="new-password"></div>
+        <div class="field"><label for="sNew2">もう一度</label><input id="sNew2" type="password" autocomplete="new-password"></div>
+        <div id="sPassMsg"></div>
+        <button class="btn sub" id="sPassBtn">変える</button>
+      </div>
+      <div class="card">
+        <div id="sWho"></div>
+        <p class="small">記録とレシートの写真は、管理者（小松）のGoogleドライブに保存されています。ほかの利用者からは見えません。</p>
+        <button class="btn red" id="sLogout">ログアウト（この端末から外す）</button>
+        <p class="small">版：2026-11-10 00:35</p>
+      </div>
+    </section>
+
+    <!-- 管理者 -->
+    <section id="tAdmin" hidden>
+      <div id="adminTop">
+        <h2>利用者（管理者だけに見えます）</h2>
+        <div class="card" id="userList"></div>
+        <p class="small">利用者の追加・パスワードを戻す・止めるは、スプレッドシート「車両ノート_データ」の「利用者」シートで行います。<br>・追加：利用者ID・名前・初期パスワードを書く<br>・パスワードを戻す：その人の「初期パスワード」の欄に新しく書く（その人の端末はログアウトされます）<br>・止める：「停止」の欄に 1 と書く</p>
+      </div>
+      <div id="adminUser" hidden>
+        <button class="btn sub" id="aBack">← 利用者の一覧へ</button>
+        <div class="ro" id="aWho"></div>
+        <div class="field"><label for="aCar">車両</label><select id="aCar"></select></div>
+        <div id="aStats"></div>
+        <h2>給油の記録</h2>
+        <div class="card" id="aList"></div>
+      </div>
+    </section>
+  </div>
+  <nav id="tabs">
+    <button data-t="tFuel" class="on"><b>⛽</b>給油</button>
+    <button data-t="tList"><b>📋</b>記録</button>
+    <button data-t="tStats"><b>📈</b>燃費</button>
+    <button data-t="tSet"><b>⚙</b>設定</button>
+    <button data-t="tAdmin" id="tabAdmin" hidden><b>👤</b>管理</button>
+  </nav>
+</div>
+
+<div id="dlg" hidden><div class="top"><button id="dlgClose">閉じる</button></div><div class="body" id="dlgBody"></div></div>
+<div id="busy" hidden><div id="busyMsg">送っています…</div></div>
+
+<script>
+const PROD=true, SCRIPT_URL="https://script.google.com/macros/s/AKfycbyzK3koYqVHEF5MqWRSc6mJ_lPNaMbtMCxhypErw7PCSQ2wtUl5OAxu82bznnMWnqW7/exec";
+const $=id=>document.getElementById(id);
+const LS="carnote_";   // GitHub Pages は同じ持ち主のページで保存場所を共有するので、名前に印を付けて分ける
+const store={
+  get(k){try{return JSON.parse(localStorage.getItem(LS+k))}catch(e){return null}},
+  set(k,v){try{localStorage.setItem(LS+k,JSON.stringify(v))}catch(e){}},
+  del(k){try{localStorage.removeItem(LS+k)}catch(e){}}
+};
+const S={token:store.get("token"),user:store.get("user"),cars:[],fuel:[],car:store.get("car"),edit:null,photo:null,pendingPhoto:null,ticket:null,admin:null};
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt=(n,d=0)=>n==null||isNaN(n)?"—":Number(n).toLocaleString("ja-JP",{minimumFractionDigits:d,maximumFractionDigits:d});
+const md=s=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||"");return m?`${+m[2]}/${+m[3]}`:s};
+const ymdJa=s=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||"");return m?`${m[1]}年${+m[2]}月${+m[3]}日`:s};
+const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`};
+const numv=id=>{const v=$(id).value.trim();return v===""?null:Number(v)};
+function msg(id,text,kind="warn"){$(id).innerHTML=text?`<div class="msg ${kind}">${text}</div>`:""}
+function busy(t){if(t){$("busyMsg").textContent=t;$("busy").hidden=false}else $("busy").hidden=true}
+
+// ===== サーバーとのやりとり =====
+async function api(action,body={}){
+  const req=Object.assign({action,token:S.token},body);
+  let j;
+  try{
+    if(!SCRIPT_URL) j=await mockApi(req);
+    else{const r=await fetch(SCRIPT_URL,{method:"POST",body:JSON.stringify(req)});j=await r.json()}
+  }catch(e){j={ok:false,error:"サーバーにつながりません。電波のよいところで、もう一度ためしてください"}}
+  if(!j.ok&&j.relogin&&S.token){S.token=null;store.del("token");showLogin(j.error)}
+  return j;
+}
+
+// ===== 燃費の計算（満タン法） =====
+function cmpRec(a,b){return a.date<b.date?-1:a.date>b.date?1:(a.odo||0)-(b.odo||0)}
+/** 1台分の記録から、満タンと満タンの間ごとの燃費を出す。
+ *  区間＝前の満タンの次の給油から、今回の満タンまで。走った距離＝今回の距離−前の満タンの距離、使った量＝区間の給油量の合計 */
+function calcFuel(recs){
+  const a=recs.slice().sort(cmpRec);
+  const iv=[], byId={}; let last=null, L=0, Y=0, yOk=true;
+  for(const r of a){
+    if(last){L+=r.liters||0; if(r.amount>0) Y+=r.amount; else yOk=false}
+    if(r.full){
+      if(last&&r.odo>last.odo&&L>0){
+        const km=r.odo-last.odo, x={from:last,to:r,km,liters:L,yen:yOk?Y:null,kmpl:km/L,ypk:yOk?Y/km:null};
+        iv.push(x); byId[r.id]=x;
+      }
+      last=r; L=0; Y=0; yOk=true;
+    }
+  }
+  const pend=last?a.filter(r=>cmpRec(r,last)>0):[];   // 最後の満タンのあとの、まだ計算していない給油
+  const km=iv.reduce((s,x)=>s+x.km,0), lit=iv.reduce((s,x)=>s+x.liters,0);
+  const yIv=iv.filter(x=>x.yen!=null), yKm=yIv.reduce((s,x)=>s+x.km,0), yen=yIv.reduce((s,x)=>s+x.yen,0);
+  return {sorted:a,iv,byId,pend,km,liters:lit,avg:lit>0?km/lit:null,ypk:yKm>0?yen/yKm:null,latest:iv.length?iv[iv.length-1]:null};
+}
+function monthly(recs){
+  const m={};
+  for(const r of recs){const k=r.date.slice(0,7);(m[k]=m[k]||{n:0,l:0,y:0,yl:0}).n++;m[k].l+=r.liters||0;if(r.amount>0){m[k].y+=r.amount;m[k].yl+=r.liters||0}}
+  return Object.keys(m).sort().reverse().map(k=>({month:k,...m[k],avgPrice:m[k].yl>0?m[k].y/m[k].yl:null}));
+}
+/** 走行距離の入力ミスの確認。前の記録より少ない・急に大きく増えた・次の記録より多い を探す */
+function odoWarn(recs,rec){
+  const o=recs.filter(f=>f.id!==rec.id&&f.odo>0).sort(cmpRec), w=[];
+  if(!(rec.odo>0)||!rec.date) return w;
+  const before=o.filter(f=>f.date<=rec.date), after=o.filter(f=>f.date>rec.date);
+  const prev=before[before.length-1], next=after[0];
+  const diffs=[];for(let i=1;i<o.length;i++){const d=o[i].odo-o[i-1].odo;if(d>0)diffs.push(d)}
+  diffs.sort((x,y)=>x-y);
+  const med=diffs.length?diffs[Math.floor(diffs.length/2)]:0;
+  const limit=diffs.length>=3?Math.max(800,Math.round(med*2.5)):1500;
+  if(prev){
+    const d=rec.odo-prev.odo;
+    if(d<0) w.push(`前回（${md(prev.date)}）の ${fmt(prev.odo)} km より少なくなっています。`);
+    else if(d===0) w.push(`前回（${md(prev.date)}）と同じ距離です。`);
+    else if(d>limit) w.push(`前回（${md(prev.date)}）から ${fmt(d)} km 増えています。ふだん（${diffs.length>=3?"およそ"+fmt(med)+" km":"1,500 kmまで"}）より大きく増えています。`);
+  }
+  if(next&&rec.odo>next.odo) w.push(`あとの記録（${md(next.date)}）の ${fmt(next.odo)} km より多くなっています。`);
+  return w;
+}
+function prevOf(recs,rec){const o=recs.filter(f=>f.id!==rec.id&&f.date<=(rec.date||"9999")).sort(cmpRec);return o[o.length-1]||null}
+
+// ===== 画面の切りかえ =====
+function show(v){for(const x of ["vLogin","vChange","vMain"])$(x).hidden=x!==v}
+function showLogin(t){show("vLogin");msg("lMsg",t||"");if(S.user)$("lId").value=S.user.id||""}
+function tab(t){
+  document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.t===t));
+  for(const s of ["tFuel","tList","tStats","tSet","tAdmin"])$(s).hidden=s!==t;
+  if(t==="tAdmin") loadAdmin();
+  window.scrollTo(0,0);
+}
+document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>tab(b.dataset.t));
+
+// ===== ログイン =====
+$("lBtn").onclick=async()=>{
+  const id=$("lId").value.trim(), pass=$("lPass").value;
+  if(!id||!pass) return msg("lMsg","利用者IDとパスワードを入れてください");
+  busy("ログインしています…");const j=await api("login",{id,pass});busy();
+  if(!j.ok) return msg("lMsg",esc(j.error));
+  $("lPass").value="";msg("lMsg","");
+  if(j.mustChange){S.ticket=j.ticket;S.user=j.user;show("vChange");return}
+  loggedIn(j);
+};
+$("lPass").onkeydown=e=>{if(e.key==="Enter")$("lBtn").click()};
+$("cBtn").onclick=async()=>{
+  const a=$("cP1").value,b=$("cP2").value;
+  if(a.length<6) return msg("cMsg","6文字以上にしてください");
+  if(a!==b) return msg("cMsg","2つのパスワードが同じではありません");
+  if(!$("cAgree").checked) return msg("cMsg","保存先についての説明を読んで、チェックを入れてください");
+  busy("登録しています…");const j=await api("changePass",{ticket:S.ticket,newPass:a});busy();
+  if(!j.ok){msg("cMsg",esc(j.error));if(/もう一度/.test(j.error||""))setTimeout(()=>showLogin(j.error),1500);return}
+  $("cP1").value=$("cP2").value="";loggedIn(j);
+};
+async function loggedIn(j){
+  S.token=j.token;S.user=j.user;store.set("token",j.token);store.set("user",j.user);
+  await reload(true);
+}
+async function reload(first){
+  show("vMain");
+  const c=store.get("cache_"+(S.user&&S.user.id));
+  if(first&&c){apply(c)}   // 先に端末に残っている内容で出してから、サーバーの最新に置きかえる
+  if(first&&!c)busy("読みこんでいます…");
+  const j=await api("load");busy();
+  if(!j.ok){if(!j.relogin)msg("fMsg",esc(j.error));return}
+  store.set("cache_"+j.user.id,{cars:j.cars,fuel:j.fuel,user:j.user});
+  apply(j);
+}
+function apply(j){
+  S.cars=j.cars||[];S.fuel=j.fuel||[];if(j.user)S.user=j.user;
+  if(!S.cars.some(c=>c.id===S.car))S.car=S.cars[0]?S.cars[0].id:null;
+  store.set("car",S.car);
+  $("tabAdmin").hidden=!(S.user&&S.user.admin);
+  renderAll();
+}
+function carRecs(id){return S.fuel.filter(f=>f.car===(id||S.car))}
+const LIMIT={"車":3,"バイク":2};   // 1人で登録できる台数（2026-11-10 ユーザー指定）。サーバーでも同じ数で確かめる
+const icon=c=>c.kind==="バイク"?"🏍":"🚗";
+const carLabel=c=>`${icon(c)} ${esc(c.name)}${c.plate?"（"+esc(c.plate)+"）":""}`;
+const kindCount=k=>S.cars.filter(c=>(c.kind||"車")===k).length;
+
+// ===== 全部を描く =====
+function renderAll(){
+  const sel=$("carSel");
+  sel.innerHTML=S.cars.length?S.cars.map(c=>`<option value="${esc(c.id)}"${c.id===S.car?" selected":""}>${carLabel(c)}</option>`).join(""):`<option>まだ登録がありません</option>`;
+  $("sCarCount").textContent=`登録できるのは 車3台・バイク2台 まで（今：車${kindCount("車")}台・バイク${kindCount("バイク")}台）`;
+  sel.disabled=!S.cars.length;
+  $("noCar").hidden=!!S.cars.length;$("fuelForm").hidden=!S.cars.length;
+  if(!S.edit)resetForm(false);
+  updPrev();
+  $("listBox").innerHTML=listHtml(carRecs(),false);
+  $("statsBox").innerHTML=statsHtml(carRecs());
+  $("carList").innerHTML=S.cars.length?S.cars.map(c=>`<div class="user"><div><b>${icon(c)} ${esc(c.name)}</b> <span class="small">${esc(c.plate||"")}</span><div class="small">記録 ${S.fuel.filter(f=>f.car===c.id).length} 件</div></div><div style="display:flex;gap:6px"><button class="btn sub" style="width:auto;margin:0;padding:8px 12px;font-size:14px" data-ren="${esc(c.id)}">名前</button><button class="btn red" style="width:auto;margin:0;padding:8px 12px;font-size:14px" data-del="${esc(c.id)}">消す</button></div></div>`).join(""):`<div class="empty">まだ登録がありません</div>`;
+  $("sWho").innerHTML=S.user?`<b>${esc(S.user.name)}</b> さん（ID：${esc(S.user.id)}）でログイン中`:"";
+}
+$("carSel").onchange=e=>{S.car=e.target.value;store.set("car",S.car);S.edit=null;renderAll()};
+
+function listHtml(recs,ro){
+  if(!recs.length) return `<div class="empty">まだ記録がありません</div>`;
+  const c=calcFuel(recs), pend=new Set(c.pend.map(r=>r.id));
+  return c.sorted.slice().reverse().map(r=>{
+    const x=c.byId[r.id];
+    const e=x?`<b class="num">${fmt(x.kmpl,1)}</b> km/L`:pend.has(r.id)?`<span class="small">${r.full?"":"次の満タンで計算"}</span>`:"";
+    return `<div class="rec" data-id="${esc(r.id)}" data-ro="${ro?1:""}"><div class="d">${md(r.date)}<div class="small">${r.date.slice(0,4)}</div></div>
+      <div class="m"><span class="num">${fmt(r.odo)}</span> km<br><span class="num">${fmt(r.liters,2)}</span> L・<span class="num">${fmt(r.amount)}</span> 円${r.full?'<span class="tag">満タン</span>':'<span class="tag p">継ぎ足し</span>'}${r.photo?" 📷":""}</div>
+      <div class="e">${e}</div></div>`;
+  }).join("");
+}
+function statsHtml(recs){
+  if(!recs.length) return `<h2>燃費・集計</h2><div class="card empty">まだ記録がありません</div>`;
+  const c=calcFuel(recs), mo=monthly(recs);
+  let h=`<h2>燃費</h2><div class="stats">
+    <div class="card"><div class="k">いちばん新しい燃費</div><div class="big num">${c.latest?fmt(c.latest.kmpl,1):"—"}</div><div class="small">km/L${c.latest?"（"+md(c.latest.to.date)+"）":""}</div></div>
+    <div class="card"><div class="k">平均の燃費</div><div class="big num">${c.avg?fmt(c.avg,1):"—"}</div><div class="small">km/L（${c.iv.length}回分）</div></div>
+    <div class="card"><div class="k">1kmあたりのガソリン代</div><div class="big num">${c.ypk?fmt(c.ypk,1):"—"}</div><div class="small">円/km</div></div>
+    <div class="card"><div class="k">燃費を計算した距離</div><div class="big num">${fmt(c.km)}</div><div class="small">km</div></div>
+  </div>`;
+  if(!c.iv.length) h+=`<div class="msg note">燃費は、満タンの給油が2回以上たまると出ます。</div>`;
+  if(c.pend.length&&c.iv.length) h+=`<div class="small" style="margin-top:8px">最後の満タンのあとの給油 ${c.pend.length} 回分は、次の満タンのときに計算します。</div>`;
+  if(c.iv.length){
+    h+=`<h2>満タンごとの燃費</h2><div class="card"><table><tr><th>期間</th><th>走った距離</th><th>給油量</th><th>燃費</th><th>円/km</th></tr>`+
+      c.iv.slice().reverse().map(x=>`<tr><td>${md(x.from.date)}〜${md(x.to.date)}</td><td class="num">${fmt(x.km)}km</td><td class="num">${fmt(x.liters,1)}L</td><td class="num"><b>${fmt(x.kmpl,1)}</b></td><td class="num">${x.ypk!=null?fmt(x.ypk,1):"—"}</td></tr>`).join("")+`</table></div>`;
+  }
+  h+=`<h2>月ごとの合計</h2><div class="card"><table><tr><th>月</th><th>回数</th><th>給油量</th><th>金額</th><th>平均単価</th></tr>`+
+    mo.map(m=>`<tr><td>${m.month.slice(0,4)}年${+m.month.slice(5)}月</td><td class="num">${m.n}</td><td class="num">${fmt(m.l,1)}L</td><td class="num"><b>${fmt(m.y)}</b>円</td><td class="num">${m.avgPrice?fmt(m.avgPrice,1):"—"}</td></tr>`).join("")+`</table></div>`;
+  return h;
+}
+
+// ===== 給油の入力 =====
+function resetForm(clearPhoto=true){
+  S.edit=null;
+  if(clearPhoto){discardPending();S.photo=null}
+  $("fTitle").textContent="給油を記録";
+  $("fDate").value=today();for(const id of ["fOdo","fLit","fPrice","fAmt","fMemo"])$(id).value="";
+  $("fFull").checked=true;$("fImg").hidden=true;$("fImg").removeAttribute("src");$("fRawBox").hidden=true;
+  $("fCancel").hidden=$("fDel").hidden=true;$("fSave").textContent="保存する";
+  for(const id of ["fOcrMsg","fMsg","fOdoMsg","fCalcMsg"])msg(id,"");
+  $("fPhotoNote").textContent="写真から日付・給油量・単価・金額を読み取ります（なくても手で入れられます）";
+  updPrev();
+}
+function discardPending(){if(S.pendingPhoto){api("discardPhoto",{photo:S.pendingPhoto});S.pendingPhoto=null}}
+function formRec(){return {id:S.edit,car:S.car,date:$("fDate").value,odo:numv("fOdo"),liters:numv("fLit"),price:numv("fPrice"),amount:numv("fAmt"),full:$("fFull").checked,photo:S.photo,memo:$("fMemo").value.trim()}}
+function updPrev(){
+  if(!S.car){$("fPrev").textContent="";return}
+  const r=formRec(), recs=carRecs(), p=prevOf(recs,r);
+  $("fPrev").innerHTML=p?`前回：${ymdJa(p.date)}　<b class="num">${fmt(p.odo)}</b> km${p.full?"（満タン）":""}${r.odo>0&&r.odo>=p.odo?`　→ 今回 <b class="num">${fmt(r.odo-p.odo)}</b> km 走行`:""}`:"この車両の最初の記録です";
+  const w=odoWarn(recs,r);
+  msg("fOdoMsg",w.length?w.map(esc).join("<br>")+"<br>数字をもう一度確かめてください。":"");
+}
+function updCalc(){
+  const l=numv("fLit"),p=numv("fPrice"),a=numv("fAmt");
+  if(l>0&&p>0&&a>0){
+    const c=Math.round(l*p), d=a-c;
+    msg("fCalcMsg",Math.abs(d)>Math.max(20,a*0.02)?`給油量×単価＝${fmt(c)}円で、金額と${fmt(Math.abs(d))}円ちがいます。読み取りまちがいがないか確かめてください（値引きなどがあるときは、そのままで大丈夫です）。`:"","note");
+  }else msg("fCalcMsg","");
+}
+["fDate","fOdo"].forEach(id=>$(id).addEventListener("input",updPrev));
+["fLit","fPrice","fAmt"].forEach(id=>$(id).addEventListener("input",updCalc));
+// 2つ入れたら、空いている1つを計算で入れる（入れたあとで直してよい）
+["fLit","fPrice","fAmt"].forEach(id=>$(id).addEventListener("change",()=>{
+  const l=numv("fLit"),p=numv("fPrice"),a=numv("fAmt");
+  if(l>0&&p>0&&a==null)$("fAmt").value=Math.round(l*p);
+  else if(l>0&&a>0&&p==null)$("fPrice").value=Math.round(a/l*10)/10;
+  else if(p>0&&a>0&&l==null)$("fLit").value=Math.round(a/p*100)/100;
+  updCalc();
+}));
+
+$("fFile").onchange=async e=>{
+  const file=e.target.files[0];e.target.value="";if(!file)return;
+  let data;
+  try{data=await shrink(file,2000)}catch(err){return msg("fOcrMsg",esc(err.message))}
+  $("fImg").src=data;$("fImg").hidden=false;
+  busy("レシートを読み取っています…（10秒ほど）");
+  const j=await api("ocr",{img:data.split(",")[1]});busy();
+  if(!j.ok){msg("fOcrMsg",esc(j.error));return}
+  discardPending();S.pendingPhoto=j.photo;S.photo=j.photo;
+  $("fRaw").textContent=j.text||"（文字が見つかりませんでした）";$("fRawBox").hidden=false;
+  const r=j.read||{}, got=[];
+  if(r.date){$("fDate").value=r.date;got.push("日付")}
+  if(r.liters){$("fLit").value=r.liters;got.push("給油量")}
+  if(r.price){$("fPrice").value=r.price;got.push("単価")}
+  if(r.amount){$("fAmt").value=r.amount;got.push("金額")}
+  const miss=["日付","給油量","単価","金額"].filter(x=>!got.includes(x));
+  if(j.ocrError) msg("fOcrMsg","写真は保存しましたが、文字を読み取れませんでした："+esc(j.ocrError)+"<br>数字を手で入れてください。");
+  else msg("fOcrMsg",(got.length?`読み取りました：${got.join("・")}。`:"")+(miss.length?`読めなかったもの：${miss.join("・")}（手で入れてください）。`:"")+(r.calc?"<br>（一部は計算で入れています）":"")+"<br><b>保存する前に、レシートと見くらべて確かめてください。</b>",miss.length?"note":"ok");
+  $("fPhotoNote").textContent="写真を変えるときは、もう一度押します";
+  updPrev();updCalc();
+  $("fOdo").focus();
+};
+function shrink(file,max){
+  return new Promise((res,rej)=>{
+    const url=URL.createObjectURL(file), img=new Image();
+    img.onload=()=>{
+      let w=img.naturalWidth,h=img.naturalHeight;const s=Math.min(1,max/Math.max(w,h));w=Math.round(w*s);h=Math.round(h*s);
+      const c=document.createElement("canvas");c.width=w;c.height=h;const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,w,h);g.drawImage(img,0,0,w,h);
+      URL.revokeObjectURL(url);res(c.toDataURL("image/jpeg",0.85));
+    };
+    img.onerror=()=>{URL.revokeObjectURL(url);rej(new Error("写真を開けませんでした"))};
+    img.src=url;
+  });
+}
+
+$("fSave").onclick=async()=>{
+  const r=formRec();
+  if(!r.date) return msg("fMsg","日付を入れてください");
+  if(!(r.odo>0)) return msg("fMsg","走行距離（メーターの数字）を入れてください");
+  if(!(r.liters>0)) return msg("fMsg","給油量を入れてください");
+  const w=odoWarn(carRecs(),r);
+  if(r.liters>120) w.push(`給油量が ${fmt(r.liters,2)} L です。`);
+  if(r.price!=null&&(r.price<80||r.price>400)) w.push(`単価が ${fmt(r.price,1)} 円/L です。`);
+  if(w.length&&!confirm(w.join("\n")+"\n\nこのまま保存しますか？")) return;
+  if(r.amount==null&&!confirm("金額が入っていません。このまま保存しますか？\n（金額がないと、ガソリン代の合計に入りません）")) return;
+  busy("保存しています…");const j=await api("saveFuel",{rec:r});busy();
+  if(!j.ok) return msg("fMsg",esc(j.error));
+  S.pendingPhoto=null;const wasEdit=!!S.edit;
+  apply(j);store.set("cache_"+S.user.id,{cars:j.cars,fuel:j.fuel,user:j.user});
+  resetForm();
+  const iv=calcFuel(carRecs()).byId;const saved=j.fuel.filter(f=>f.car===r.car&&f.date===r.date&&f.odo===r.odo).pop();
+  const x=saved&&iv[saved.id];
+  msg("fMsg",(wasEdit?"直しました。":"保存しました。")+(x?`今回の燃費は <b>${fmt(x.kmpl,1)} km/L</b>（${fmt(x.km)} km ÷ ${fmt(x.liters,2)} L）です。`:r.full?"":"満タンでないので、燃費は次の満タンのときに計算します。"),"ok");
+  if(wasEdit)tab("tList");
+};
+$("fCancel").onclick=()=>{resetForm();tab("tList")};
+$("fDel").onclick=async()=>{
+  if(!S.edit||!confirm("この記録を消しますか？（レシートの写真も消えます）"))return;
+  busy("消しています…");const j=await api("delFuel",{id:S.edit});busy();
+  if(!j.ok) return msg("fMsg",esc(j.error));
+  S.photo=null;S.pendingPhoto=null;apply(j);resetForm();tab("tList");
+};
+function editRec(id){
+  const r=S.fuel.find(f=>f.id===id);if(!r)return;
+  resetForm();S.edit=id;S.photo=r.photo||null;
+  $("fTitle").textContent=`記録を直す（${ymdJa(r.date)}）`;
+  $("fDate").value=r.date;$("fOdo").value=r.odo??"";$("fLit").value=r.liters??"";$("fPrice").value=r.price??"";$("fAmt").value=r.amount??"";
+  $("fFull").checked=!!r.full;$("fMemo").value=r.memo||"";
+  $("fCancel").hidden=$("fDel").hidden=false;$("fSave").textContent="直して保存する";
+  if(r.photo){$("fPhotoNote").innerHTML=`レシートの写真あり　<a href="#" id="fSee">見る</a>（写真を変えるときは上を押す）`;$("fSee").onclick=e=>{e.preventDefault();seePhoto(r.photo)}}
+  tab("tFuel");updPrev();updCalc();
+}
+const photoCache={};
+async function seePhoto(id){
+  $("dlgBody").innerHTML=`<p style="color:#fff">読みこんでいます…</p>`;$("dlg").hidden=false;
+  if(!photoCache[id]){const j=await api("photo",{photo:id});if(!j.ok){$("dlgBody").innerHTML=`<p style="color:#fff">${esc(j.error)}</p>`;return}photoCache[id]=`data:${j.mime};base64,${j.img}`}
+  $("dlgBody").innerHTML=`<img src="${photoCache[id]}" alt="レシート">`;
+}
+$("dlgClose").onclick=()=>{$("dlg").hidden=true;$("dlgBody").innerHTML=""};
+function recDetail(r){
+  $("dlgBody").innerHTML=`<div class="card" style="text-align:left;max-width:520px;margin:0 auto">
+    <b>${ymdJa(r.date)}</b><br>走行距離 ${fmt(r.odo)} km<br>給油量 ${fmt(r.liters,2)} L／単価 ${r.price!=null?fmt(r.price,1):"—"} 円／金額 ${fmt(r.amount)} 円<br>${r.full?"満タン":"継ぎ足し"}${r.memo?"<br>メモ："+esc(r.memo):""}
+    ${r.photo?`<button class="btn sub" id="dSee">レシートの写真を見る</button>`:""}</div>`;
+  $("dlg").hidden=false;if(r.photo)$("dSee").onclick=()=>seePhoto(r.photo);
+}
+document.addEventListener("click",e=>{
+  const el=e.target.closest(".rec");if(!el)return;
+  if(el.dataset.ro){const r=(S.admin&&S.admin.fuel||[]).find(f=>f.id===el.dataset.id);if(r)recDetail(r)}
+  else editRec(el.dataset.id);
+});
+
+// ===== 車の登録 =====
+async function addCar(name,plate,kind){
+  if(!name.trim()) return alert("名前を入れてください");
+  if(kindCount(kind)>=LIMIT[kind]) return alert(`${kind}は${LIMIT[kind]}台まで登録できます（使わなくなったものを消すと、追加できます）`);
+  busy("登録しています…");const j=await api("saveCar",{car:{name,plate,kind}});busy();
+  if(!j.ok) return alert(j.error);
+  const before=new Set(S.cars.map(c=>c.id));apply(j);
+  const n=j.cars.find(c=>!before.has(c.id));if(n){S.car=n.id;store.set("car",S.car);renderAll()}
+  return true;
+}
+$("nCarBtn").onclick=async()=>{if(await addCar($("nCarName").value,$("nCarPlate").value,$("nCarKind").value))$("nCarName").value=$("nCarPlate").value=""};
+$("sCarAdd").onclick=async()=>{const k=$("sCarKind").value;if(await addCar($("sCarName").value,$("sCarPlate").value,k)){$("sCarName").value=$("sCarPlate").value="";alert(`${k}を追加しました。画面の上の欄で切りかえられます`)}};
+$("carList").onclick=async e=>{
+  const ren=e.target.dataset.ren, del=e.target.dataset.del;
+  if(ren){const c=S.cars.find(x=>x.id===ren);const name=prompt("名前",c.name);if(name==null)return;const plate=prompt("ナンバー（なくてもよい）",c.plate||"");if(plate==null)return;
+    busy("保存しています…");const j=await api("saveCar",{car:{id:ren,name,plate,kind:c.kind||"車"}});busy();if(!j.ok)return alert(j.error);apply(j)}
+  if(del){const c=S.cars.find(x=>x.id===del);if(!confirm(`「${c.name}」を消しますか？\n（一覧から見えなくなります。記録はスプレッドシートには残ります）`))return;
+    busy("消しています…");const j=await api("delCar",{id:del});busy();if(!j.ok)return alert(j.error);apply(j)}
+};
+
+// ===== 設定 =====
+$("sPassBtn").onclick=async()=>{
+  const o=$("sOld").value,a=$("sNew1").value,b=$("sNew2").value;
+  if(a.length<6) return msg("sPassMsg","6文字以上にしてください");
+  if(a!==b) return msg("sPassMsg","2つのパスワードが同じではありません");
+  busy("変えています…");const j=await api("newPass",{oldPass:o,newPass:a});busy();
+  if(!j.ok) return msg("sPassMsg",esc(j.error));
+  $("sOld").value=$("sNew1").value=$("sNew2").value="";msg("sPassMsg","パスワードを変えました","ok");
+};
+$("sLogout").onclick=async()=>{
+  if(!confirm("ログアウトしますか？\n次に使うときは、利用者IDとパスワードが必要です"))return;
+  busy("ログアウトしています…");await api("logout");busy();
+  if(S.user)store.del("cache_"+S.user.id);
+  S.token=null;store.del("token");S.cars=[];S.fuel=[];showLogin("ログアウトしました");
+};
+
+// ===== 管理者 =====
+async function loadAdmin(){
+  $("adminTop").hidden=false;$("adminUser").hidden=true;
+  $("userList").innerHTML=`<div class="empty">読みこんでいます…</div>`;
+  const j=await api("adminUsers");
+  if(!j.ok){$("userList").innerHTML=`<div class="msg warn">${esc(j.error)}</div>`;return}
+  $("userList").innerHTML=j.users.length?j.users.map(u=>`<div class="user" data-uid="${esc(u.id)}"><div><b>${esc(u.name||u.id)}</b> <span class="small">${esc(u.id)}</span>${u.admin?'<span class="tag">管理者</span>':""}${u.stopped?'<span class="tag p">停止中</span>':""}${u.waiting?'<span class="tag p">初期パスワード</span>':""}<div class="small">最終ログイン ${esc(u.lastLogin||"—")}</div></div><div class="small" style="text-align:right">車両 ${u.cars}台<br>記録 ${u.fuel}件${u.last?"<br>最後 "+md(u.last):""}</div></div>`).join(""):`<div class="empty">まだいません</div>`;
+}
+$("userList").onclick=async e=>{
+  const el=e.target.closest("[data-uid]");if(!el)return;
+  busy("読みこんでいます…");const j=await api("adminLoad",{uid:el.dataset.uid});busy();
+  if(!j.ok) return alert(j.error);
+  S.admin=j;$("adminTop").hidden=true;$("adminUser").hidden=false;
+  $("aWho").textContent=`${j.user.name}さん（${j.user.id}）の記録を見ています（見るだけ）`;
+  $("aCar").innerHTML=j.cars.length?j.cars.map(c=>`<option value="${esc(c.id)}">${carLabel(c)}</option>`).join(""):`<option value="">車両の登録がありません</option>`;
+  renderAdminCar();window.scrollTo(0,0);
+};
+function renderAdminCar(){const id=$("aCar").value, recs=(S.admin.fuel||[]).filter(f=>f.car===id);$("aStats").innerHTML=statsHtml(recs);$("aList").innerHTML=listHtml(recs,true)}
+$("aCar").onchange=renderAdminCar;
+$("aBack").onclick=()=>{S.admin=null;loadAdmin()};
+
+
+
+// 試験用（このパソコンで開いたときだけ）
+if(/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) window.__T={calcFuel,odoWarn,monthly,S};
+
+// ===== はじめ =====
+if(S.token&&S.user) reload(true); else showLogin();
+</script>
+
+</body>
+</html>
