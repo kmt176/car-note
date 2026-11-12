@@ -316,7 +316,8 @@ pre{white-space:pre-wrap;font-size:12px;background:#F2F4F5;padding:8px;border-ra
         <div id="sWho"></div>
         <p class="small">記録とレシートの写真、買い物の在庫・リストは、管理者（小松）のGoogleドライブに保存されています。ほかの利用者からは見えません。</p>
         <button class="btn red" id="sLogout">ログアウト（この端末から外す）</button>
-        <p class="small">版：2026-11-12 10:13</p>
+        <div style="display:flex;align-items:center;gap:10px"><span class="small">版：2026-11-12 10:20</span><button class="mini" id="appReload">更新</button></div>
+        <p class="small">新しい版が出ているのに古いままのときは「更新」を押します（ホーム画面から開いていると、古い画面が残りやすいです）。記録は消えません。</p>
       </div>
     </section>
 
@@ -708,6 +709,7 @@ $("sPassBtn").onclick=async()=>{
   if(!j.ok) return msg("sPassMsg",esc(j.error));
   $("sOld").value=$("sNew1").value=$("sNew2").value="";msg("sPassMsg","パスワードを変えました","ok");
 };
+$("appReload").onclick=()=>{location.href=location.pathname+"?r="+Date.now()};   // 点呼ノートと同じ：アドレスに時刻を付けて、古い画面を使わずに開き直す
 $("sLogout").onclick=async()=>{
   if(!confirm("ログアウトしますか？\n次に使うときは、利用者IDとパスワードが必要です"))return;
   busy("ログアウトしています…");await api("logout");busy();
