@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="車両ノート">
+<meta name="apple-mobile-web-app-title" content="日常アプリ">
 <meta name="robots" content="noindex">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon-180.png">
@@ -19,7 +19,7 @@ img{max-width:100%}
 </style>
 </head>
 <body>
-<title>車両ノート</title>
+<title>日常アプリ</title>
 <style>
 :root{
   --main:#1D6A80; --main2:#E8F1F4; --bg:#F6F7F8; --card:#fff; --ink:#1E2328; --sub:#5F6B73; --line:#DDE2E5;
@@ -89,13 +89,44 @@ pre{white-space:pre-wrap;font-size:12px;background:#F2F4F5;padding:8px;border-ra
 .login h1{color:var(--main);text-align:center;font-size:26px;margin:10px 0 4px}
 .empty{text-align:center;color:var(--sub);padding:24px 0}
 .ro{background:var(--notebg);color:var(--note);border-radius:8px;padding:8px 10px;font-size:14px;margin:10px 0}
+/* 車両と買い物の切りかえ（2026-11-12 車両ノートを日常アプリにして、買い物をまとめた） */
+.mode{display:flex;gap:3px;background:rgba(255,255,255,.18);border-radius:10px;padding:3px;flex:0 0 auto}
+.mode button{border:0;background:none;color:#fff;padding:6px 10px;border-radius:8px;font-size:15px;font-weight:700;white-space:nowrap}
+.mode button.on{background:#fff;color:var(--main)}
+.seg{display:flex;gap:4px;background:#E6EAEC;border-radius:10px;padding:4px;margin:12px 0}
+.seg button{flex:1;min-width:0;border:0;background:none;border-radius:8px;padding:9px 2px;font-size:15px;color:var(--sub);white-space:nowrap}
+.seg button.on{background:#fff;color:var(--main);font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.field .seg{margin:0}
+.item{display:flex;align-items:center;gap:10px;padding:10px 2px;border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:0}
+.item[data-sid]{cursor:pointer}
+.item .ic{flex:0 0 42px;height:42px;border-radius:8px;background:var(--main2);display:flex;align-items:center;justify-content:center;font-size:23px}
+.item .m{flex:1;min-width:0}
+.item .m b{word-break:break-all}
+.item .e{flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+.chip{display:inline-block;font-size:12.5px;border-radius:999px;padding:1px 8px;background:#EEF1F2;color:var(--sub);white-space:nowrap}
+.chip.bad{background:var(--warnbg);color:var(--warn);font-weight:700}
+.chip.soon{background:var(--notebg);color:var(--note);font-weight:700}
+.mini{border:1px solid #C5CDD2;background:#fff;border-radius:8px;padding:6px 10px;font-size:14px;white-space:nowrap}
+.mini.go{border-color:#E3B4AF;color:var(--warn);background:var(--warnbg)}
+.ck{flex:0 0 42px;height:42px;border-radius:50%;border:2px solid var(--main);background:#fff;color:var(--main);font-size:20px;font-weight:700;padding:0}
+.ck.on{background:var(--main);color:#fff}
+.x{border:0;background:none;color:var(--sub);font-size:18px;padding:6px 8px}
+.done .m b{text-decoration:line-through;color:var(--sub)}
+.vrow{display:flex;gap:8px;align-items:stretch}
+.vrow input{flex:1;min-width:0;border:1px solid #C5CDD2;border-radius:8px;padding:10px;font-size:17px;background:#fff}
+.btn.mic{flex:0 0 56px;width:56px;margin:0;padding:0;font-size:22px}
+.btn.mic.on{background:var(--warnbg);color:var(--warn)}
+.cnt{display:flex;gap:8px}.cnt input{flex:1;min-width:0;text-align:center}
+.cnt button{flex:0 0 52px;border:1px solid #C5CDD2;background:#fff;border-radius:8px;font-size:22px}
+.place h2{margin:0 0 4px;font-size:16px}
 </style>
 
 <!-- ログイン -->
 <div id="vLogin" class="wrap" hidden>
   <div class="login">
-    <h1>車両ノート</h1>
-    <p class="small" style="text-align:center;margin:0 0 16px">給油・燃費の記録</p>
+    <h1>日常アプリ</h1>
+    <p class="small" style="text-align:center;margin:0 0 16px">給油・燃費の記録と、買い物・冷蔵庫の在庫</p>
     <div class="card">
       <div class="field"><label for="lId">利用者ID</label><input id="lId" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false"></div>
       <div class="field"><label for="lPass">パスワード</label><input id="lPass" type="password" autocomplete="current-password"></div>
@@ -125,7 +156,7 @@ pre{white-space:pre-wrap;font-size:12px;background:#F2F4F5;padding:8px;border-ra
 
 <!-- 本体 -->
 <div id="vMain" hidden>
-  <header><div class="row"><h1>車両ノート</h1><select id="carSel" aria-label="車両をえらぶ"></select></div></header>
+  <header><div class="row"><div class="mode" id="modeSw" role="tablist" aria-label="車両と買い物の切りかえ"><button data-m="car">🚗 車両</button><button data-m="kai">🛒 買い物</button></div><select id="carSel" aria-label="車両をえらぶ"></select></div></header>
   <div class="wrap">
 
     <!-- 給油を記録 -->
@@ -180,6 +211,57 @@ pre{white-space:pre-wrap;font-size:12px;background:#F2F4F5;padding:8px;border-ra
     <!-- 燃費・集計 -->
     <section id="tStats" hidden><div id="statsBox"></div></section>
 
+    <!-- 買い物：在庫 -->
+    <section id="tStock" hidden>
+      <div class="seg" id="kFilter"></div>
+      <div id="kAlert"></div>
+      <div id="kTopMsg"></div>
+      <div id="kStockBox"></div>
+    </section>
+
+    <!-- 買い物：買った物を入れる -->
+    <section id="tAdd" hidden>
+      <h2>買った物を入れる</h2>
+      <div class="card">
+        <label for="vText" class="small" style="display:block;margin-bottom:4px">声や文字でまとめて入れる</label>
+        <div class="vrow"><input id="vText" placeholder="例：卵、10個、258円"><button class="btn sub mic" id="vMic" aria-label="声で入れる">🎤</button></div>
+        <button class="btn sub" id="vGo">この内容を下の欄に入れる</button>
+        <div class="small" id="vNote">「卵、10個、258円」「牛乳 1本 冷蔵庫 11月20日まで」のように話します。🎤がうまく動かないときは、キーボードのマイクで話してから上のボタンを押してください。</div>
+        <div id="vMsg"></div>
+      </div>
+      <div class="card">
+        <div class="field"><label for="kName">商品名</label><input id="kName" list="dlNames" autocomplete="off"></div>
+        <div class="field"><label>保存場所</label><div class="seg" id="kPlace"><button data-p="冷蔵庫">🧊 冷蔵庫</button><button data-p="冷凍庫">❄️ 冷凍庫</button><button data-p="棚">🗄 棚</button></div></div>
+        <div class="two">
+          <div class="field"><label for="kCount">個数</label><div class="unit"><input id="kCount" type="number" inputmode="decimal" min="0" step="1" value="1"><span>個</span></div></div>
+          <div class="field"><label for="kPrice">金額（合計）</label><div class="unit"><input id="kPrice" type="number" inputmode="numeric" min="0" step="1"><span>円</span></div></div>
+        </div>
+        <div class="field"><label for="kShop">お店（なくてもよい）</label><input id="kShop" list="dlShops" autocomplete="off"></div>
+        <div class="two">
+          <div class="field"><label for="kDate">買った日</label><input id="kDate" type="date"></div>
+          <div class="field"><label for="kDays">期限の目安</label><div class="unit"><input id="kDays" type="number" inputmode="numeric" min="0" step="1"><span>日</span></div></div>
+        </div>
+        <div class="field"><label for="kExp">賞味期限（なくてもよい）</label><input id="kExp" type="date"><div class="small" id="kExpNote"></div></div>
+        <label class="check"><input type="checkbox" id="kHist" checked>買った物として記録する（購入履歴・食費に入れる）</label>
+        <div class="small" style="margin:-6px 0 6px">今ある物を最初に登録するときは、チェックを外します。</div>
+        <div id="kMsg"></div>
+        <button class="btn" id="kSave">在庫に入れる</button>
+      </div>
+    </section>
+
+    <!-- 買い物：買い物リスト -->
+    <section id="tShop" hidden>
+      <h2>買い物リスト</h2>
+      <div class="card">
+        <div class="vrow"><input id="bName" placeholder="買う物（例：牛乳）" list="dlNames" autocomplete="off" aria-label="買う物"><button class="btn sub mic" id="bMic" aria-label="声で入れる">🎤</button></div>
+        <button class="btn" id="bAdd">リストに足す</button>
+        <div id="bMsg"></div>
+      </div>
+      <div class="card" id="bList"></div>
+      <div id="bDoneBox"><h2>買った物（7日以内）</h2><div class="card" id="bDone"></div></div>
+    </section>
+    <datalist id="dlNames"></datalist><datalist id="dlShops"></datalist>
+
     <!-- 設定 -->
     <section id="tSet" hidden>
       <h2>車両の登録</h2>
@@ -201,9 +283,9 @@ pre{white-space:pre-wrap;font-size:12px;background:#F2F4F5;padding:8px;border-ra
       </div>
       <div class="card">
         <div id="sWho"></div>
-        <p class="small">記録とレシートの写真は、管理者（小松）のGoogleドライブに保存されています。ほかの利用者からは見えません。</p>
+        <p class="small">記録とレシートの写真、買い物の在庫・リストは、管理者（小松）のGoogleドライブに保存されています。ほかの利用者からは見えません。</p>
         <button class="btn red" id="sLogout">ログアウト（この端末から外す）</button>
-        <p class="small">版：2026-11-10 00:35</p>
+        <p class="small">版：2026-11-12 09:53</p>
       </div>
     </section>
 
@@ -225,11 +307,14 @@ pre{white-space:pre-wrap;font-size:12px;background:#F2F4F5;padding:8px;border-ra
     </section>
   </div>
   <nav id="tabs">
-    <button data-t="tFuel" class="on"><b>⛽</b>給油</button>
-    <button data-t="tList"><b>📋</b>記録</button>
-    <button data-t="tStats"><b>📈</b>燃費</button>
+    <button data-t="tFuel" data-m="car" class="on"><b>⛽</b>給油</button>
+    <button data-t="tList" data-m="car"><b>📋</b>記録</button>
+    <button data-t="tStats" data-m="car"><b>📈</b>燃費</button>
+    <button data-t="tStock" data-m="kai"><b>🧊</b>在庫</button>
+    <button data-t="tAdd" data-m="kai"><b>＋</b>入れる</button>
+    <button data-t="tShop" data-m="kai"><b>🛒</b>買う物</button>
     <button data-t="tSet"><b>⚙</b>設定</button>
-    <button data-t="tAdmin" id="tabAdmin" hidden><b>👤</b>管理</button>
+    <button data-t="tAdmin" data-m="car" id="tabAdmin" hidden><b>👤</b>管理</button>
   </nav>
 </div>
 
@@ -245,7 +330,8 @@ const store={
   set(k,v){try{localStorage.setItem(LS+k,JSON.stringify(v))}catch(e){}},
   del(k){try{localStorage.removeItem(LS+k)}catch(e){}}
 };
-const S={token:store.get("token"),user:store.get("user"),cars:[],fuel:[],car:store.get("car"),edit:null,photo:null,pendingPhoto:null,ticket:null,admin:null};
+const S={token:store.get("token"),user:store.get("user"),cars:[],fuel:[],car:store.get("car"),edit:null,photo:null,pendingPhoto:null,ticket:null,admin:null,
+  kai:{master:[],stock:[],hist:[],shop:[]},mode:store.get("mode")==="kai"?"kai":"car",kPlace:""};
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmt=(n,d=0)=>n==null||isNaN(n)?"—":Number(n).toLocaleString("ja-JP",{minimumFractionDigits:d,maximumFractionDigits:d});
 const md=s=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||"");return m?`${+m[2]}/${+m[3]}`:s};
@@ -320,11 +406,20 @@ function show(v){for(const x of ["vLogin","vChange","vMain"])$(x).hidden=x!==v}
 function showLogin(t){show("vLogin");msg("lMsg",t||"");if(S.user)$("lId").value=S.user.id||""}
 function tab(t){
   document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.t===t));
-  for(const s of ["tFuel","tList","tStats","tSet","tAdmin"])$(s).hidden=s!==t;
+  for(const s of ["tFuel","tList","tStats","tSet","tAdmin","tStock","tAdd","tShop"])$(s).hidden=s!==t;
   if(t==="tAdmin") loadAdmin();
   window.scrollTo(0,0);
 }
 document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>tab(b.dataset.t));
+/** 上の「車両／買い物」の切りかえ。下のボタンをその分だけにする */
+function setMode(m,go=true){
+  S.mode=m;store.set("mode",m);
+  document.querySelectorAll("#modeSw button").forEach(b=>b.classList.toggle("on",b.dataset.m===m));
+  document.querySelectorAll("#tabs button").forEach(b=>{if(b.dataset.m)b.hidden=b.dataset.m!==m||(b.id==="tabAdmin"&&!(S.user&&S.user.admin))});
+  $("carSel").hidden=m!=="car";
+  if(go)tab(m==="car"?"tFuel":"tStock");
+}
+document.querySelectorAll("#modeSw button").forEach(b=>b.onclick=()=>setMode(b.dataset.m));
 
 // ===== ログイン =====
 $("lBtn").onclick=async()=>{
@@ -357,14 +452,16 @@ async function reload(first){
   if(first&&!c)busy("読みこんでいます…");
   const j=await api("load");busy();
   if(!j.ok){if(!j.relogin)msg("fMsg",esc(j.error));return}
-  store.set("cache_"+j.user.id,{cars:j.cars,fuel:j.fuel,user:j.user});
+  saveCache(j);
   apply(j);
 }
+function saveCache(j){store.set("cache_"+j.user.id,{cars:j.cars,fuel:j.fuel,kai:j.kai,user:j.user})}
 function apply(j){
   S.cars=j.cars||[];S.fuel=j.fuel||[];if(j.user)S.user=j.user;
+  if(j.kai)S.kai=j.kai;
   if(!S.cars.some(c=>c.id===S.car))S.car=S.cars[0]?S.cars[0].id:null;
   store.set("car",S.car);
-  $("tabAdmin").hidden=!(S.user&&S.user.admin);
+  setMode(S.mode,!S.shown);S.shown=true;   // 開いたときは、前に使っていた方（車両か買い物）の最初の画面から
   renderAll();
 }
 function carRecs(id){return S.fuel.filter(f=>f.car===(id||S.car))}
@@ -386,6 +483,7 @@ function renderAll(){
   $("statsBox").innerHTML=statsHtml(carRecs());
   $("carList").innerHTML=S.cars.length?S.cars.map(c=>`<div class="user"><div><b>${icon(c)} ${esc(c.name)}</b> <span class="small">${esc(c.plate||"")}</span><div class="small">記録 ${S.fuel.filter(f=>f.car===c.id).length} 件</div></div><div style="display:flex;gap:6px"><button class="btn sub" style="width:auto;margin:0;padding:8px 12px;font-size:14px" data-ren="${esc(c.id)}">名前</button><button class="btn red" style="width:auto;margin:0;padding:8px 12px;font-size:14px" data-del="${esc(c.id)}">消す</button></div></div>`).join(""):`<div class="empty">まだ登録がありません</div>`;
   $("sWho").innerHTML=S.user?`<b>${esc(S.user.name)}</b> さん（ID：${esc(S.user.id)}）でログイン中`:"";
+  renderKai();
 }
 $("carSel").onchange=e=>{S.car=e.target.value;store.set("car",S.car);S.edit=null;renderAll()};
 
@@ -507,7 +605,7 @@ $("fSave").onclick=async()=>{
   busy("保存しています…");const j=await api("saveFuel",{rec:r});busy();
   if(!j.ok) return msg("fMsg",esc(j.error));
   S.pendingPhoto=null;const wasEdit=!!S.edit;
-  apply(j);store.set("cache_"+S.user.id,{cars:j.cars,fuel:j.fuel,user:j.user});
+  apply(j);saveCache(j);
   resetForm();
   const iv=calcFuel(carRecs()).byId;const saved=j.fuel.filter(f=>f.car===r.car&&f.date===r.date&&f.odo===r.odo).pop();
   const x=saved&&iv[saved.id];
@@ -607,10 +705,245 @@ function renderAdminCar(){const id=$("aCar").value, recs=(S.admin.fuel||[]).filt
 $("aCar").onchange=renderAdminCar;
 $("aBack").onclick=()=>{S.admin=null;loadAdmin()};
 
+// ===== 買い物（在庫・入れる・買い物リスト）2026-11-12 =====
+const PLACES=["冷蔵庫","冷凍庫","棚"], PLACE_IC={"冷蔵庫":"🧊","冷凍庫":"❄️","棚":"🗄"};
+/** 商品名から、アイコン・期限の目安の日数・ふつうの保存場所を見当で決める（前に入れた商品は、商品マスタの方を使う）。上から順に見る */
+const GUESS=[
+  [/卵|たまご|玉子/,"🥚",14,"冷蔵庫"],[/牛乳|ミルク/,"🥛",7,"冷蔵庫"],[/ヨーグルト/,"🥛",10,"冷蔵庫"],[/豆腐|とうふ/,"⬜",5,"冷蔵庫"],[/納豆/,"🫘",7,"冷蔵庫"],
+  [/アイス/,"🍨",180,"冷凍庫"],[/冷凍/,"❄️",30,"冷凍庫"],[/ひき肉|挽肉|ミンチ/,"🥩",2,"冷蔵庫"],[/ハム|ベーコン|ソーセージ|ウインナー/,"🥓",7,"冷蔵庫"],
+  [/肉|豚|牛|鶏|ささみ/,"🥩",3,"冷蔵庫"],[/刺身|さしみ|寿司/,"🍣",1,"冷蔵庫"],[/魚|鮭|さけ|サバ|さば|アジ|あじ|ブリ|マグロ|まぐろ|エビ|えび|イカ|いか/,"🐟",2,"冷蔵庫"],
+  [/チーズ/,"🧀",20,"冷蔵庫"],[/バター|マーガリン/,"🧈",30,"冷蔵庫"],[/パン/,"🍞",4,"棚"],[/缶詰|カップ麺|カップめん|レトルト/,"🥫",365,"棚"],
+  [/米|こめ/,"🍚",60,"棚"],[/麺|うどん|そば|ラーメン|パスタ|スパゲッティ/,"🍜",90,"棚"],[/玉ねぎ|たまねぎ|玉葱/,"🧅",30,"棚"],[/じゃがいも|ジャガイモ|さつまいも|芋/,"🥔",30,"棚"],
+  [/にんじん|人参/,"🥕",14,"冷蔵庫"],[/キャベツ|レタス|白菜|ほうれん草|小松菜|ねぎ|ネギ|もやし|きゅうり|トマト|ピーマン|なす|ブロッコリー|大根|野菜/,"🥬",5,"冷蔵庫"],
+  [/バナナ/,"🍌",5,"棚"],[/りんご|リンゴ/,"🍎",14,"冷蔵庫"],[/みかん|オレンジ|いちご|ぶどう|果物|フルーツ/,"🍊",7,"冷蔵庫"],[/味噌|みそ/,"🥣",90,"冷蔵庫"],
+  [/マヨネーズ|ケチャップ|ドレッシング|ソース|ポン酢|めんつゆ/,"🧴",60,"冷蔵庫"],[/醤油|しょうゆ|塩|砂糖|酢|油|みりん|料理酒|調味料|こしょう|胡椒/,"🧂",180,"棚"],
+  [/ジュース|お茶|ミネラルウォーター|コーヒー|ビール|酒|飲料/,"🧃",90,"棚"],[/お菓子|菓子|チョコ|ポテチ|せんべい|クッキー/,"🍪",60,"棚"],
+];
+function guess(name){const n=String(name||"").normalize("NFKC");for(const [re,ic,days,place] of GUESS)if(re.test(n))return {ic,days,place};return null}
+const kkey=s=>String(s||"").normalize("NFKC").replace(/\s/g,"").toLowerCase();
+const masterOf=name=>{const k=kkey(name);return k?(S.kai.master||[]).find(m=>kkey(m.name)===k)||null:null};
+const ymdOf=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const addDays=(s,n)=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||"");return m?ymdOf(new Date(+m[1],+m[2]-1,+m[3]+Number(n))):""};
+const dayDiff=(a,b)=>Math.round((new Date(b+"T00:00:00")-new Date(a+"T00:00:00"))/86400000);
+const cnum=n=>n==null?"":String(+n);
+const itemIc=s=>{const g=guess(s.name);return g?g.ic:PLACE_IC[s.place]||"📦"};
+
+/** 漢数字を数字にする（「十個」「二百五十八円」など。単位の前だけ直すので、「七味」などの名前は変わらない） */
+function kanjiNum(s){
+  const d={"〇":0,"零":0,"一":1,"二":2,"三":3,"四":4,"五":5,"六":6,"七":7,"八":8,"九":9}, u={"十":10,"百":100,"千":1000};
+  if(!/[十百千]/.test(s)) return String(Number([...s].map(c=>d[c]).join("")));
+  let total=0,cur=0;for(const c of s){if(c in d)cur=d[c];else{total+=(cur||1)*u[c];cur=0}}
+  return String(total+cur);
+}
+/** 話した言葉（または打った文）から、商品名・個数・金額・保存場所・期限・お店を読む。例：「卵、10個、258円」 */
+function parseSpoken(text,base){
+  base=base||today();
+  const UNIT="個|こ|コ|ケ|本|パック|袋|枚|缶|玉|束|株|切れ|尾|丁|箱|瓶|つ";
+  let t=String(text||"").normalize("NFKC");
+  t=t.replace(new RegExp(`([〇零一二三四五六七八九十百千]+)(?=\\s*(${UNIT}|円|月|日))`,"g"),m=>kanjiNum(m));
+  const r={};
+  // 保存場所
+  if(/冷凍/.test(t))r.place="冷凍庫";else if(/冷蔵/.test(t))r.place="冷蔵庫";else if(/棚|常温/.test(t))r.place="棚";
+  t=t.replace(/(冷凍庫|冷凍|冷蔵庫|冷蔵|棚|常温)(に|へ|で)?(入れる|しまう)?/g," ");
+  // 期限（2026年11月20日／11月20日まで）
+  let m=/(?:賞味期限|消費期限|期限)?\s*(20\d{2})\s*[年\/-]\s*(\d{1,2})\s*[月\/-]\s*(\d{1,2})\s*日?\s*(?:まで)?/.exec(t);
+  if(m){r.expiry=addDays(`${m[1]}-${String(m[2]).padStart(2,"0")}-${String(m[3]).padStart(2,"0")}`,0);t=t.replace(m[0]," ")}
+  else if((m=/(?:賞味期限|消費期限|期限)?\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日\s*(?:まで)?/.exec(t))){
+    const y=+base.slice(0,4), mo=+m[1], d=+m[2];
+    if(mo>=1&&mo<=12&&d>=1&&d<=31){let e=ymdOf(new Date(y,mo-1,d));if(dayDiff(base,e)< -60)e=ymdOf(new Date(y+1,mo-1,d));r.expiry=e}
+    t=t.replace(m[0]," ");
+  }
+  if((m=/(?:あと)?\s*(\d{1,3})\s*日\s*(?:もつ|持つ|くらい|ぐらい|ほど)/.exec(t))){r.days=+m[1];t=t.replace(m[0]," ")}
+  // 金額・個数
+  if((m=/([\d,]+)\s*円/.exec(t))){r.price=Number(m[1].replace(/,/g,""));t=t.replace(m[0]," ")}
+  if((m=new RegExp(`(\\d+(?:\\.\\d+)?)\\s*(${UNIT})`).exec(t))){r.count=Number(m[1]);t=t.replace(m[0]," ")}
+  // お店（「〇〇で買った」）
+  if((m=/(\S+?)\s*で\s*買(った|いました|う)/.exec(t))){r.shop=m[1].replace(/^[、,]/,"");t=t.replace(m[0]," ")}
+  let tok=t.split(/[、,。・\s]+/).map(x=>x.trim()).filter(Boolean);
+  if(r.count==null){const i=tok.findIndex(x=>/^\d+(\.\d+)?$/.test(x));if(i>=0){r.count=Number(tok[i]);tok.splice(i,1)}}
+  const name=tok.filter(x=>!/^\d+$/.test(x)).join(" ").replace(/^(を|が|は)\s*/,"").replace(/\s*(を|が|は)$/,"").trim();
+  if(name)r.name=name;
+  return r;
+}
+
+// ----- 描く -----
+function renderKai(){
+  const k=S.kai, st=(k.stock||[]).slice();
+  const cnt=p=>st.filter(s=>s.place===p).length;
+  $("kFilter").innerHTML=[["","全部",st.length],...PLACES.map(p=>[p,p,cnt(p)])].map(([v,l,n])=>`<button data-f="${v}" class="${S.kPlace===v?"on":""}">${l} <span class="small">${n}</span></button>`).join("");
+  const td=today(), left=s=>s.expiry?dayDiff(td,s.expiry):null;
+  const over=st.filter(s=>left(s)!=null&&left(s)<0), soon=st.filter(s=>left(s)!=null&&left(s)>=0&&left(s)<=2);
+  $("kAlert").innerHTML=(over.length?`<div class="msg warn">期限切れ：${over.map(s=>esc(s.name)).join("、")}</div>`:"")+(soon.length?`<div class="msg note">2日以内に期限：${soon.map(s=>esc(s.name)).join("、")}</div>`:"");
+  st.sort((a,b)=>(a.expiry||"9999")<(b.expiry||"9999")?-1:(a.expiry||"9999")>(b.expiry||"9999")?1:a.name.localeCompare(b.name,"ja"));
+  const chip=s=>{const l=left(s);return l==null?"":l<0?`<span class="chip bad">期限切れ ${-l}日</span>`:l===0?`<span class="chip bad">今日まで</span>`:l<=2?`<span class="chip soon">あと${l}日</span>`:`<span class="chip">${md(s.expiry)}まで</span>`};
+  const row=s=>`<div class="item" data-sid="${esc(s.id)}"><div class="ic" aria-hidden="true">${itemIc(s)}</div>
+    <div class="m"><b>${esc(s.name)}</b> <span class="num">×${esc(cnum(s.count))}</span><div class="small">${s.bought?md(s.bought)+"に買った":""}${s.opened?"・開封 "+md(s.opened):""}</div></div>
+    <div class="e">${chip(s)}<button class="mini go" data-gone="${esc(s.id)}">なくなった</button></div></div>`;
+  const places=S.kPlace?[S.kPlace]:PLACES;
+  $("kStockBox").innerHTML=!st.length?`<div class="card empty">まだ何もありません。<br>下の「＋入れる」から、買った物を入れます。</div>`:
+    places.map(p=>{const a=st.filter(s=>s.place===p);return (a.length||S.kPlace)?`<div class="card place"><h2>${PLACE_IC[p]} ${p}（${a.length}）</h2>${a.length?a.map(row).join(""):`<div class="empty">ありません</div>`}</div>`:""}).join("");
+  // 買い物リスト
+  const sh=k.shop||[], pend=sh.filter(b=>!b.done), done=sh.filter(b=>b.done).sort((a,b)=>a.done<b.done?1:-1);
+  $("bList").innerHTML=pend.length?pend.map(b=>`<div class="item"><button class="ck" data-ck="${esc(b.id)}" aria-label="${esc(b.name)}を買った"></button>
+    <div class="m"><b>${esc(b.name)}</b><div class="small">${b.reason==="なくなった"?'<span class="chip soon">なくなった</span>':'<span class="chip">手で足した</span>'} ${md(b.added)}</div></div>
+    <button class="x" data-bdel="${esc(b.id)}" aria-label="${esc(b.name)}をリストから消す">✕</button></div>`).join(""):`<div class="empty">買う物はありません</div>`;
+  $("bDoneBox").hidden=!done.length;
+  const stocked=b=>st.some(s=>kkey(s.name)===kkey(b.name)&&s.bought>=String(b.done).slice(0,10));
+  $("bDone").innerHTML=done.map(b=>`<div class="item done"><button class="ck on" data-unck="${esc(b.id)}" aria-label="${esc(b.name)}を買う物に戻す">✓</button>
+    <div class="m"><b>${esc(b.name)}</b><div class="small">${md(String(b.done).slice(0,10))}に買った</div></div>
+    ${stocked(b)?`<span class="small">在庫に入れ済み</span>`:`<button class="mini" data-tostock="${esc(b.name)}">在庫に入れる</button>`}</div>`).join("");
+  // 入力の候補
+  const names=[...new Set([...(k.master||[]).map(m=>m.name),...(k.hist||[]).map(h=>h.name)].filter(Boolean))];
+  $("dlNames").innerHTML=names.map(n=>`<option value="${esc(n)}">`).join("");
+  const shops=[...new Set((k.hist||[]).slice().reverse().map(h=>h.shop).filter(Boolean))];
+  $("dlShops").innerHTML=shops.map(n=>`<option value="${esc(n)}">`).join("");
+}
+
+// ----- 在庫の画面 -----
+$("kFilter").onclick=e=>{const b=e.target.closest("[data-f]");if(!b)return;S.kPlace=b.dataset.f;renderKai()};
+$("kStockBox").onclick=e=>{
+  const g=e.target.closest("[data-gone]");if(g){goneStock(g.dataset.gone);return}
+  const it=e.target.closest("[data-sid]");if(it)editStock(it.dataset.sid);
+};
+async function kCall(action,body,msgId){
+  busy("保存しています…");const j=await api(action,body);busy();
+  if(!j.ok){if(msgId)msg(msgId,esc(j.error));else alert(j.error);return null}
+  apply(j);saveCache(j);return j;
+}
+async function goneStock(id){
+  const s=S.kai.stock.find(x=>x.id===id);if(!s)return;
+  const j=await kCall("gone",{id},"kTopMsg");if(!j)return;
+  $("dlg").hidden=true;$("dlgBody").innerHTML="";
+  msg("kTopMsg",`「${esc(s.name)}」を在庫から外し、${j.added?"買い物リストに入れました":"（買い物リストにはもう入っています）"}。`,"ok");
+}
+function editStock(id){
+  const s=S.kai.stock.find(x=>x.id===id);if(!s)return;
+  $("dlgBody").innerHTML=`<div class="card" style="text-align:left;max-width:520px;margin:0 auto">
+    <h2 style="margin-top:0">${itemIc(s)} 在庫を直す</h2>
+    <div class="field"><label for="eName">商品名</label><input id="eName" value="${esc(s.name)}"></div>
+    <div class="field"><label for="ePlace">保存場所</label><select id="ePlace">${PLACES.map(p=>`<option${p===s.place?" selected":""}>${p}</option>`).join("")}</select></div>
+    <div class="field"><label for="eCount">個数</label><div class="cnt"><button id="eMinus" aria-label="1つへらす">−</button><input id="eCount" type="number" inputmode="decimal" min="0" value="${esc(cnum(s.count))}"><button id="ePlus" aria-label="1つふやす">＋</button></div></div>
+    <div class="field"><label for="eExp">賞味期限</label><input id="eExp" type="date" value="${esc(s.expiry||"")}"></div>
+    <div class="field"><label for="eOpen">開けた日</label><div class="vrow"><input id="eOpen" type="date" value="${esc(s.opened||"")}"><button class="mini" id="eToday">今日開けた</button></div></div>
+    <div class="small">${s.bought?ymdJa(s.bought)+"に買った":""}</div>
+    <div id="eMsg"></div>
+    <button class="btn" id="eSave">直して保存する</button>
+    <button class="btn red" id="eGone">なくなった（買い物リストへ）</button>
+    <button class="btn sub" id="eDel">まちがえて入れたので消す</button>
+  </div>`;
+  $("dlg").hidden=false;
+  const step=d=>{const v=Math.max(0,(Number($("eCount").value)||0)+d);$("eCount").value=v};
+  $("eMinus").onclick=()=>step(-1);$("ePlus").onclick=()=>step(1);
+  $("eToday").onclick=()=>{$("eOpen").value=today()};
+  $("eSave").onclick=async()=>{
+    const c=Number($("eCount").value);
+    if(!(c>0)) return msg("eMsg","個数が0のときは、「なくなった」を押してください");
+    const j=await kCall("saveStock",{stock:{id,name:$("eName").value.trim(),place:$("ePlace").value,count:c,expiry:$("eExp").value,opened:$("eOpen").value}},"eMsg");
+    if(j){$("dlg").hidden=true;$("dlgBody").innerHTML="";msg("kTopMsg","直しました","ok")}
+  };
+  $("eGone").onclick=()=>goneStock(id);
+  $("eDel").onclick=async()=>{
+    if(!confirm(`「${s.name}」を消しますか？\n（買い物リストには入りません）`))return;
+    const j=await kCall("delStock",{id},"eMsg");
+    if(j){$("dlg").hidden=true;$("dlgBody").innerHTML="";msg("kTopMsg","消しました","ok")}
+  };
+}
+
+// ----- 買った物を入れる -----
+let kPlaceSel="", kPlaceTouched=false, kExpTouched=false, kDaysAuto=true;
+function kSetPlace(p){kPlaceSel=p;document.querySelectorAll("#kPlace button").forEach(b=>b.classList.toggle("on",b.dataset.p===p))}
+function kReset(){
+  $("kName").value="";$("kCount").value=1;$("kPrice").value="";$("kDays").value="";$("kExp").value="";
+  if(!$("kDate").value)$("kDate").value=today();
+  kSetPlace("");kPlaceTouched=false;kExpTouched=false;kDaysAuto=true;$("kExpNote").textContent="";
+}
+function kFillFromName(){
+  const n=$("kName").value.trim();if(!n)return;
+  const m=masterOf(n), g=guess(n);
+  if(!kPlaceTouched)kSetPlace((m&&m.place)||(g&&g.place)||"冷蔵庫");
+  if(kDaysAuto)$("kDays").value=(m&&m.days)||(g&&g.days)||"";
+  kUpdExp();
+}
+function kUpdExp(){
+  const d=numv("kDays"), date=$("kDate").value;
+  if(!kExpTouched)$("kExp").value=d>0&&date?addDays(date,d):"";
+  const m=masterOf($("kName").value);
+  $("kExpNote").textContent=!kExpTouched&&d>0?`買った日から${d}日（${m&&m.days?"前に入れた日数":"ふつうの目安"}）で入れました。袋に日付が書いてあれば、そちらに直してください。`:"";
+}
+$("kName").addEventListener("input",kFillFromName);
+$("kDays").addEventListener("input",()=>{kDaysAuto=false;kUpdExp()});
+$("kDate").addEventListener("input",kUpdExp);
+$("kExp").addEventListener("input",()=>{kExpTouched=!!$("kExp").value;$("kExpNote").textContent=""});
+$("kPlace").onclick=e=>{const b=e.target.closest("[data-p]");if(!b)return;kPlaceTouched=true;kSetPlace(b.dataset.p)};
+$("vGo").onclick=()=>{
+  const r=parseSpoken($("vText").value);
+  if(!r.name&&r.count==null&&r.price==null) return msg("vMsg","読み取れませんでした。「卵、10個、258円」のように入れてください");
+  if(r.name){$("kName").value=r.name;kFillFromName()}
+  if(r.place){kPlaceTouched=true;kSetPlace(r.place)}
+  if(r.count!=null)$("kCount").value=r.count;
+  if(r.price!=null)$("kPrice").value=r.price;
+  if(r.shop)$("kShop").value=r.shop;
+  if(r.days){$("kDays").value=r.days;kDaysAuto=false}
+  if(r.expiry){$("kExp").value=r.expiry;kExpTouched=true}
+  kUpdExp();if(r.expiry)$("kExpNote").textContent="";
+  const got=[r.name&&"商品名",r.count!=null&&"個数",r.price!=null&&"金額",r.place&&"保存場所",r.expiry&&"期限",r.shop&&"お店"].filter(Boolean);
+  msg("vMsg",`入れました：${got.join("・")}。${r.name?"":"<br>商品名は手で入れてください。"}<br>確かめてから「在庫に入れる」を押してください。`,r.name?"ok":"note");
+};
+$("kSave").onclick=async()=>{
+  const it={name:$("kName").value.trim(),place:kPlaceSel,count:numv("kCount"),price:numv("kPrice"),shop:$("kShop").value.trim(),date:$("kDate").value,expiry:$("kExp").value,days:numv("kDays"),history:$("kHist").checked};
+  if(!it.name) return msg("kMsg","商品名を入れてください");
+  if(!it.place) return msg("kMsg","保存場所（冷蔵庫・冷凍庫・棚）をえらんでください");
+  if(!(it.count>0)) return msg("kMsg","個数を入れてください");
+  if(!it.date) return msg("kMsg","買った日を入れてください");
+  if(it.expiry&&it.expiry<it.date&&!confirm("賞味期限が、買った日より前になっています。このまま入れますか？"))return;
+  const j=await kCall("addItem",{item:it},"kMsg");if(!j)return;
+  kReset();$("vText").value="";msg("vMsg","");
+  msg("kMsg",`「${esc(it.name)}」を${it.place}に入れました。続けて入れられます。`,"ok");
+};
+
+// ----- 買い物リスト -----
+$("bAdd").onclick=async()=>{
+  const names=$("bName").value.split(/[、,，。・\n]+/).map(s=>s.trim()).filter(Boolean);
+  if(!names.length) return msg("bMsg","買う物を入れてください");
+  const added=[],had=[];
+  for(const n of names){const j=await kCall("shopAdd",{name:n},"bMsg");if(!j)return;(j.added?added:had).push(n)}
+  $("bName").value="";
+  msg("bMsg",(added.length?`足しました：${added.map(esc).join("、")}。`:"")+(had.length?`もう入っています：${had.map(esc).join("、")}。`:""),"ok");
+};
+$("bName").onkeydown=e=>{if(e.key==="Enter")$("bAdd").click()};
+$("tShop").addEventListener("click",async e=>{
+  const b=e.target.closest("[data-ck],[data-unck],[data-bdel],[data-tostock]");if(!b)return;
+  if(b.dataset.ck) await kCall("shopCheck",{id:b.dataset.ck,done:true},"bMsg");
+  else if(b.dataset.unck) await kCall("shopCheck",{id:b.dataset.unck,done:false},"bMsg");
+  else if(b.dataset.bdel){const x=S.kai.shop.find(s=>s.id===b.dataset.bdel);if(x&&confirm(`「${x.name}」をリストから消しますか？`))await kCall("shopDel",{id:x.id},"bMsg")}
+  else if(b.dataset.tostock){tab("tAdd");kReset();$("kName").value=b.dataset.tostock;kFillFromName();msg("kMsg","");msg("vMsg","")}
+});
+
+// ----- 声で入れる（ブラウザの音声認識。使えないときはキーボードのマイクで） -----
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+let recNow=null;
+function listen(btn,input,after,append){
+  if(!SR){alert("この端末では、アプリの🎤が使えません。\n文字を入れる欄を押して、キーボードのマイクのボタンで話してください。");input.focus();return}
+  if(recNow){recNow.stop();return}
+  const r=new SR();r.lang="ja-JP";r.interimResults=false;r.maxAlternatives=1;recNow=r;
+  btn.classList.add("on");btn.textContent="■";
+  r.onresult=e=>{const t=Array.from(e.results).map(x=>x[0].transcript).join("");input.value=append&&input.value.trim()?input.value.trim()+"、"+t:t;if(after)after()};
+  r.onerror=e=>{
+    if(e.error==="no-speech")alert("声が聞こえませんでした。もう一度🎤を押して話してください");
+    else if(e.error==="not-allowed"||e.error==="service-not-allowed")alert("マイクを使う許可がありません。\nキーボードのマイクのボタンで話してください。");
+    else if(e.error!=="aborted")alert("声を読み取れませんでした（"+e.error+"）。\nキーボードのマイクのボタンでも入れられます。");
+  };
+  r.onend=()=>{recNow=null;btn.classList.remove("on");btn.textContent="🎤"};
+  try{r.start()}catch(err){r.onend();alert("🎤を使えませんでした。キーボードのマイクのボタンで話してください。")}
+}
+$("vMic").onclick=()=>listen($("vMic"),$("vText"),()=>$("vGo").click());
+$("bMic").onclick=()=>listen($("bMic"),$("bName"),null,true);
+kReset();
+
 
 
 // 試験用（このパソコンで開いたときだけ）
-if(/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) window.__T={calcFuel,odoWarn,monthly,S};
+if(/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) window.__T={calcFuel,odoWarn,monthly,S,parseSpoken,guess,addDays,kanjiNum};
 
 // ===== はじめ =====
 if(S.token&&S.user) reload(true); else showLogin();
