@@ -120,6 +120,17 @@ pre{white-space:pre-wrap;font-size:12px;background:#F2F4F5;padding:8px;border-ra
 .cnt{display:flex;gap:8px}.cnt input{flex:1;min-width:0;text-align:center}
 .cnt button{flex:0 0 52px;border:1px solid #C5CDD2;background:#fff;border-radius:8px;font-size:22px}
 .place h2{margin:0 0 4px;font-size:16px}
+/* レシートの読み取り結果の行 */
+.rrow{display:flex;gap:8px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}
+.rrow:last-child{border-bottom:0}
+.rrow.off .rf{opacity:.45}
+.rrow .rck{flex:0 0 auto;padding-top:9px}.rrow .rck input{width:24px;height:24px}
+.rrow .rf{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.rrow input.rn{width:100%;border:1px solid #C5CDD2;border-radius:8px;padding:8px;font-size:16px;background:#fff}
+.rrow .rsub{display:flex;gap:6px;align-items:center;font-size:14px;color:var(--sub);flex-wrap:wrap}
+.rrow .rsub input{width:56px;border:1px solid #C5CDD2;border-radius:8px;padding:7px 6px;font-size:16px;text-align:right;background:#fff}
+.rrow .rsub input.rp{width:84px}
+.rrow .rsub select{border:1px solid #C5CDD2;border-radius:8px;padding:7px 4px;font-size:15px;background:#fff}
 </style>
 
 <!-- ログイン -->
@@ -223,6 +234,26 @@ pre{white-space:pre-wrap;font-size:12px;background:#F2F4F5;padding:8px;border-ra
     <section id="tAdd" hidden>
       <h2>買った物を入れる</h2>
       <div class="card">
+        <label class="btn" style="margin:0;text-align:center;cursor:pointer">📷 レシートを撮る・選ぶ<input type="file" id="rFile" accept="image/*" hidden></label>
+        <div class="small" style="margin-top:6px">写真から、お店・日付・品物の名前と金額を読み取ります。写真は読み取りに使うだけで、保存しません。</div>
+        <div id="rMsg"></div>
+      </div>
+      <div class="card" id="rBox" hidden>
+        <h2 style="margin-top:0">レシートの読み取り結果</h2>
+        <div class="two">
+          <div class="field"><label for="rShop">お店</label><input id="rShop" list="dlShops" autocomplete="off"></div>
+          <div class="field"><label for="rDate">買った日</label><input id="rDate" type="date"></div>
+        </div>
+        <div class="small">入れない物（袋代など）はチェックを外します。名前・個数・金額・場所は直せます。名前は「卵」「牛乳」のように短く直すと、次から期限の目安や場所を覚えて使います。</div>
+        <div id="rList"></div>
+        <button class="btn sub" id="rAddRow">＋ 行を足す</button>
+        <div id="rSum"></div>
+        <details id="rRawBox"><summary>読み取った文字を見る</summary><pre id="rRaw"></pre></details>
+        <div id="rSaveMsg"></div>
+        <button class="btn" id="rSave">チェックした物を在庫に入れる</button>
+        <button class="btn sub" id="rCancel">やめる</button>
+      </div>
+      <div class="card">
         <label for="vText" class="small" style="display:block;margin-bottom:4px">声や文字でまとめて入れる</label>
         <div class="vrow"><input id="vText" placeholder="例：卵、10個、258円"><button class="btn sub mic" id="vMic" aria-label="声で入れる">🎤</button></div>
         <button class="btn sub" id="vGo">この内容を下の欄に入れる</button>
@@ -285,7 +316,7 @@ pre{white-space:pre-wrap;font-size:12px;background:#F2F4F5;padding:8px;border-ra
         <div id="sWho"></div>
         <p class="small">記録とレシートの写真、買い物の在庫・リストは、管理者（小松）のGoogleドライブに保存されています。ほかの利用者からは見えません。</p>
         <button class="btn red" id="sLogout">ログアウト（この端末から外す）</button>
-        <p class="small">版：2026-11-12 09:53</p>
+        <p class="small">版：2026-11-12 10:13</p>
       </div>
     </section>
 
@@ -719,7 +750,7 @@ const GUESS=[
   [/マヨネーズ|ケチャップ|ドレッシング|ソース|ポン酢|めんつゆ/,"🧴",60,"冷蔵庫"],[/醤油|しょうゆ|塩|砂糖|酢|油|みりん|料理酒|調味料|こしょう|胡椒/,"🧂",180,"棚"],
   [/ジュース|お茶|ミネラルウォーター|コーヒー|ビール|酒|飲料/,"🧃",90,"棚"],[/お菓子|菓子|チョコ|ポテチ|せんべい|クッキー/,"🍪",60,"棚"],
 ];
-function guess(name){const n=String(name||"").normalize("NFKC");for(const [re,ic,days,place] of GUESS)if(re.test(n))return {ic,days,place};return null}
+function guess(name){const n=String(name||"").normalize("NFKC"), h=n.replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x60));for(const [re,ic,days,place] of GUESS)if(re.test(n)||re.test(h))return {ic,days,place};return null}
 const kkey=s=>String(s||"").normalize("NFKC").replace(/\s/g,"").toLowerCase();
 const masterOf=name=>{const k=kkey(name);return k?(S.kai.master||[]).find(m=>kkey(m.name)===k)||null:null};
 const ymdOf=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
@@ -899,6 +930,65 @@ $("kSave").onclick=async()=>{
   const j=await kCall("addItem",{item:it},"kMsg");if(!j)return;
   kReset();$("vText").value="";msg("vMsg","");
   msg("kMsg",`「${esc(it.name)}」を${it.place}に入れました。続けて入れられます。`,"ok");
+};
+
+// ----- レシートを撮って、まとめて入れる -----
+const placeOf=name=>{const m=masterOf(name),g=guess(name);return (m&&m.place)||(g&&g.place)||"冷蔵庫"};
+const daysOf=name=>{const m=masterOf(name),g=guess(name);return (m&&m.days)||(g&&g.days)||null};
+function rRow(it){
+  const on=!it.skip;
+  return `<div class="rrow${on?"":" off"}"><label class="rck"><input type="checkbox"${on?" checked":""} aria-label="入れる"></label><div class="rf">
+    <input class="rn" value="${esc(it.name||"")}" placeholder="商品名" aria-label="商品名">
+    <div class="rsub"><input class="rc" type="number" inputmode="decimal" min="0" value="${esc(cnum(it.count||1))}" aria-label="個数">個
+      <input class="rp" type="number" inputmode="numeric" min="0" value="${it.price==null?"":esc(it.price)}" aria-label="金額">円
+      <select class="rpl" aria-label="保存場所">${PLACES.map(p=>`<option${p===placeOf(it.name)?" selected":""}>${p}</option>`).join("")}</select></div>
+  </div></div>`;
+}
+function rSum(){
+  let sum=0;document.querySelectorAll("#rList .rrow").forEach(r=>{if(r.querySelector(".rck input").checked)sum+=Number(r.querySelector(".rp").value)||0});
+  const tot=S.rTotal;
+  msg("rSum",`チェックした物の合計：<b>${fmt(sum)}</b> 円${tot?`／レシートの合計：<b>${fmt(tot)}</b> 円`:""}${tot&&Math.abs(tot-sum)>Math.max(10,tot*0.12)?"<br>合計がだいぶちがいます。読み落としや金額のまちがいがないか、レシートと見くらべてください。":tot&&tot!==sum?"<br>（税や袋代の分だけちがうのは、そのままで大丈夫です）":""}`,"note");
+}
+$("rFile").onchange=async e=>{
+  const file=e.target.files[0];e.target.value="";if(!file)return;
+  let data;try{data=await shrink(file,2200)}catch(err){return msg("rMsg",esc(err.message))}
+  busy("レシートを読み取っています…（10〜20秒）");
+  const j=await api("kaiOcr",{img:data.split(",")[1]});busy();
+  if(!j.ok) return msg("rMsg",esc(j.error));
+  const r=j.read||{}, items=r.items||[];
+  $("rShop").value=r.shop||"";$("rDate").value=r.date||today();S.rTotal=r.total||null;
+  $("rList").innerHTML=items.length?items.map(rRow).join(""):rRow({name:"",count:1,price:null});
+  $("rRaw").textContent=j.text||"（文字が見つかりませんでした）";
+  $("rBox").hidden=false;msg("rSaveMsg","");rSum();
+  const paired=items.some(x=>x.paired);
+  msg("rMsg",items.length?`${items.length}行 読み取りました。${r.date?"":"日付は読めなかったので今日にしています。"}${paired?"<br>名前と金額が別々に読まれたので、上から順に組にしています。<b>組み合わせがずれていないか</b>確かめてください。":""}<br><b>入れる前に、レシートと見くらべてください。</b>`:"品物を読み取れませんでした。明るいところで、レシートをまっすぐ撮り直すか、下の欄に手で入れてください。",items.length&&!paired?"ok":"note");
+  $("rBox").scrollIntoView({behavior:"smooth",block:"start"});
+};
+$("rList").addEventListener("input",e=>{
+  const row=e.target.closest(".rrow");if(!row)return;
+  if(e.target.classList.contains("rn")&&!row.dataset.pt)row.querySelector(".rpl").value=placeOf(e.target.value);
+  if(e.target.type==="checkbox")row.classList.toggle("off",!e.target.checked);
+  rSum();
+});
+$("rList").addEventListener("change",e=>{const row=e.target.closest(".rrow");if(!row)return;if(e.target.classList.contains("rpl"))row.dataset.pt=1;if(e.target.type==="checkbox"){row.classList.toggle("off",!e.target.checked);rSum()}});
+$("rAddRow").onclick=()=>{$("rList").insertAdjacentHTML("beforeend",rRow({name:"",count:1,price:null}));const ins=$("rList").querySelectorAll(".rn");ins[ins.length-1].focus()};
+$("rCancel").onclick=()=>{$("rBox").hidden=true;$("rList").innerHTML="";msg("rMsg","")};
+$("rSave").onclick=async()=>{
+  const date=$("rDate").value;if(!date)return msg("rSaveMsg","買った日を入れてください");
+  const items=[];let bad="";
+  document.querySelectorAll("#rList .rrow").forEach((r,i)=>{
+    if(!r.querySelector(".rck input").checked)return;
+    const name=r.querySelector(".rn").value.trim(), count=Number(r.querySelector(".rc").value)||1, pv=r.querySelector(".rp").value.trim();
+    if(!name){bad=bad||`${i+1}行目の商品名が空です（入れないときはチェックを外します）`;return}
+    const days=daysOf(name);
+    items.push({name,count,price:pv===""?null:Number(pv),place:r.querySelector(".rpl").value,days,expiry:days?addDays(date,days):""});
+  });
+  if(bad)return msg("rSaveMsg",bad);
+  if(!items.length)return msg("rSaveMsg","チェックした物がありません");
+  const j=await kCall("addItems",{date,shop:$("rShop").value.trim(),items},"rSaveMsg");if(!j)return;
+  $("rBox").hidden=true;$("rList").innerHTML="";
+  msg("rMsg",`${items.length}品を在庫に入れました（期限は目安の日数で入れています。在庫の画面で品物を押すと直せます）。`,"ok");
+  window.scrollTo(0,0);
 };
 
 // ----- 買い物リスト -----
