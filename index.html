@@ -130,6 +130,8 @@ pre{white-space:pre-wrap;font-size:12px;background:#F2F4F5;padding:8px;border-ra
 .rrow .rsub{display:flex;gap:6px;align-items:center;font-size:14px;color:var(--sub);flex-wrap:wrap}
 .rrow .rsub input{width:56px;border:1px solid #C5CDD2;border-radius:8px;padding:7px 6px;font-size:16px;text-align:right;background:#fff}
 .rrow .rsub input.rp{width:84px}
+.rrow .rsub input.rx{width:150px;text-align:left}
+.rrow .rnote{font-size:13px;color:#9A5B00}
 .rrow .rsub select{border:1px solid #C5CDD2;border-radius:8px;padding:7px 4px;font-size:15px;background:#fff}
 </style>
 
@@ -278,6 +280,22 @@ pre{white-space:pre-wrap;font-size:12px;background:#F2F4F5;padding:8px;border-ra
         <div id="kMsg"></div>
         <button class="btn" id="kSave">在庫に入れる</button>
       </div>
+      <div class="card" id="tkCard">
+        <h2 style="margin-top:0">📋 今ある物をまとめて入れる（棚卸し）</h2>
+        <div class="small">場所をえらんでから🎤を押し、ある物を続けて言います。例：「しょうゆ、みりん、マヨネーズ2本、ケチャップ」。何回でも足せます。買った記録（食費）には入りません。</div>
+        <div class="field" style="margin-top:8px"><label>どこにある物か</label><div class="seg" id="tkPlace"><button data-p="冷蔵庫">🧊 冷蔵庫</button><button data-p="冷凍庫">❄️ 冷凍庫</button><button data-p="棚">🗄 棚</button></div></div>
+        <div class="vrow"><input id="tkText" placeholder="例：しょうゆ、みりん、マヨネーズ2本"><button class="btn sub mic" id="tkMic" aria-label="声で言う">🎤</button></div>
+        <button class="btn sub" id="tkGo">言った物を下の一覧に足す</button>
+        <div class="small">🎤がうまく動かないときは、キーボードのマイクで話してから上のボタンを押します。1品ずつ少し間をあけるか、「、」をはさむと分けやすくなります。</div>
+        <div id="tkMsg"></div>
+        <div id="tkBox" hidden>
+          <div id="tkList"></div>
+          <button class="btn sub" id="tkAddRow">＋ 行を足す</button>
+          <div id="tkSaveMsg"></div>
+          <button class="btn" id="tkSave">チェックした物を在庫に入れる</button>
+          <button class="btn sub" id="tkClear">一覧を全部消す</button>
+        </div>
+      </div>
     </section>
 
     <!-- 買い物：買い物リスト -->
@@ -316,7 +334,7 @@ pre{white-space:pre-wrap;font-size:12px;background:#F2F4F5;padding:8px;border-ra
         <div id="sWho"></div>
         <p class="small">記録とレシートの写真、買い物の在庫・リストは、管理者（小松）のGoogleドライブに保存されています。ほかの利用者からは見えません。</p>
         <button class="btn red" id="sLogout">ログアウト（この端末から外す）</button>
-        <div style="display:flex;align-items:center;gap:10px"><span class="small">版：2026-11-12 10:20</span><button class="mini" id="appReload">更新</button></div>
+        <div style="display:flex;align-items:center;gap:10px"><span class="small">版：2026-11-25 09:10</span><button class="mini" id="appReload">更新</button></div>
         <p class="small">新しい版が出ているのに古いままのときは「更新」を押します（ホーム画面から開いていると、古い画面が残りやすいです）。記録は消えません。</p>
       </div>
     </section>
@@ -1032,10 +1050,88 @@ $("vMic").onclick=()=>listen($("vMic"),$("vText"),()=>$("vGo").click());
 $("bMic").onclick=()=>listen($("bMic"),$("bName"),null,true);
 kReset();
 
+// ----- 棚卸し：今ある物を声でまとめて入れる（2026-11-25。購入履歴・食費には入れない） -----
+const hira=s=>String(s||"").replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x60));
+/** 区切りのない「醤油みりんマヨネーズ」を、知っている名前（前に入れた物・GUESSの言葉）だけで全部うまるときに限って分ける */
+function splitKnown(s){
+  const words=[...new Set([...(S.kai&&S.kai.master||[]).map(m=>m.name),...(S.kai&&S.kai.hist||[]).map(h=>h.name),
+    ...GUESS.flatMap(g=>g[0].source.split("|")).filter(w=>/^[^\\()[\]?*+.^$]+$/.test(w))].map(w=>hira(String(w).normalize("NFKC").replace(/\s/g,""))).filter(w=>w.length>=1))];
+  const h=hira(s), n=h.length, best=new Array(n+1).fill(null);best[0]=[];
+  for(let i=0;i<n;i++){if(!best[i])continue;
+    for(const w of words){if(h.startsWith(w,i)){const j=i+w.length, c=best[i].concat([j]);if(!best[j]||c.length<best[j].length)best[j]=c}}
+    // 名前のあとの「2本」などの数も、その名前に付ける
+    const m=/^\d+(\.\d+)?(個|本|パック|袋|枚|缶|玉|束|株|切れ|丁|箱|瓶|つ|こ)?/.exec(h.slice(i));
+    if(m&&i>0){const j=i+m[0].length, c=best[i].slice(0,-1).concat([j]);if(!best[j]||c.length<best[j].length)best[j]=c}
+  }
+  if(!best[n]||best[n].length<2)return [s];
+  let a=0;return best[n].map(j=>{const p=s.slice(a,j);a=j;return p});
+}
+/** 話した文を1品ずつに分けて読む。返すのは [{name,count,place,expiry}] */
+function splitSpoken(text,base){
+  base=base||today();
+  const UNIT="個|こ|本|パック|袋|枚|缶|玉|束|株|切れ|丁|箱|瓶|つ";
+  let t=String(text||"").normalize("NFKC");
+  t=t.replace(new RegExp(`([〇零一二三四五六七八九十百千]+)(?=\\s*(${UNIT}|月|日))`,"g"),m=>kanjiNum(m));
+  t=t.replace(new RegExp(`(\\d+(?:\\.\\d+)?\\s*(?:${UNIT}))(?![\\d月日])`,"g"),"$1、").replace(/まで/g,"まで、");
+  t=t.replace(/(それと|それから|あとは|次は|つぎは)/g,"、");
+  // 「11月 20日」のように数字のあとで切れないよう、日付の中のすき間はつめる
+  t=t.replace(/(\d{1,2})\s*月\s*(\d{1,2})\s*日/g,"$1月$2日");
+  const parts=t.split(/[、,，。・\s\n]+/).map(x=>x.trim()).filter(Boolean).flatMap(splitKnown);
+  const out=[];
+  for(const p of parts){
+    const r=parseSpoken(p,base);
+    if(r.days&&!r.expiry)r.expiry=addDays(base,r.days);
+    if(!r.name){const last=out[out.length-1];if(last){if(r.count!=null)last.count=r.count;if(r.expiry)last.expiry=r.expiry;if(r.place)last.place=r.place}continue}
+    out.push({name:r.name,count:r.count!=null?r.count:1,place:r.place||"",expiry:r.expiry||""});
+  }
+  return out;
+}
+let tkPlaceSel="";
+function tkSetPlace(p){tkPlaceSel=p;document.querySelectorAll("#tkPlace button").forEach(b=>b.classList.toggle("on",b.dataset.p===p))}
+$("tkPlace").onclick=e=>{const b=e.target.closest("[data-p]");if(b)tkSetPlace(b.dataset.p)};
+const inStock=name=>(S.kai&&S.kai.stock||[]).some(s=>kkey(s.name)===kkey(name));
+function tkRow(it){
+  const had=it.name&&inStock(it.name), on=!had, pl=it.place||tkPlaceSel||placeOf(it.name);
+  return `<div class="rrow${on?"":" off"}"><label class="rck"><input type="checkbox"${on?" checked":""} aria-label="入れる"></label><div class="rf">
+    <input class="rn" value="${esc(it.name||"")}" placeholder="商品名" aria-label="商品名">
+    <div class="rsub"><input class="rc" type="number" inputmode="decimal" min="0" value="${esc(cnum(it.count||1))}" aria-label="個数">個
+      <select class="rpl" aria-label="保存場所">${PLACES.map(p=>`<option${p===pl?" selected":""}>${p}</option>`).join("")}</select>
+      期限<input class="rx" type="date" value="${esc(it.expiry||"")}" aria-label="賞味期限（なくてもよい）"></div>
+    ${had?`<div class="rnote">在庫にもうあります（入れると2つになるので、チェックを外しています）</div>`:""}
+  </div></div>`;
+}
+$("tkGo").onclick=()=>{
+  const items=splitSpoken($("tkText").value);
+  if(!items.length)return msg("tkMsg","読み取れませんでした。「しょうゆ、みりん、マヨネーズ2本」のように言ってください");
+  $("tkList").insertAdjacentHTML("beforeend",items.map(tkRow).join(""));
+  $("tkBox").hidden=false;$("tkText").value="";
+  const had=items.filter(x=>inStock(x.name)).length;
+  msg("tkMsg",`${items.length}品を足しました：${items.map(x=>esc(x.name)).join("、")}。${had?`<br>${had}品は在庫にもうあるので、チェックを外しています。`:""}<br>続けて言えます。終わったら一覧を確かめて、下のボタンで在庫に入れます。`,"ok");
+};
+$("tkMic").onclick=()=>listen($("tkMic"),$("tkText"),()=>$("tkGo").click());
+$("tkText").onkeydown=e=>{if(e.key==="Enter")$("tkGo").click()};
+$("tkList").addEventListener("change",e=>{const row=e.target.closest(".rrow");if(row&&e.target.type==="checkbox")row.classList.toggle("off",!e.target.checked)});
+$("tkAddRow").onclick=()=>{$("tkList").insertAdjacentHTML("beforeend",tkRow({name:"",count:1}));$("tkBox").hidden=false;const ins=$("tkList").querySelectorAll(".rn");ins[ins.length-1].focus()};
+$("tkClear").onclick=()=>{if($("tkList").children.length&&!confirm("一覧を全部消しますか？（在庫に入れた物は消えません）"))return;$("tkList").innerHTML="";$("tkBox").hidden=true;msg("tkMsg","");msg("tkSaveMsg","")};
+$("tkSave").onclick=async()=>{
+  const items=[];let bad="";
+  document.querySelectorAll("#tkList .rrow").forEach((r,i)=>{
+    if(!r.querySelector(".rck input").checked)return;
+    const name=r.querySelector(".rn").value.trim();
+    if(!name){bad=bad||`${i+1}行目の商品名が空です（入れないときはチェックを外します）`;return}
+    items.push({name,count:Number(r.querySelector(".rc").value)||1,price:null,place:r.querySelector(".rpl").value,days:null,expiry:r.querySelector(".rx").value});
+  });
+  if(bad)return msg("tkSaveMsg",bad);
+  if(!items.length)return msg("tkSaveMsg","チェックした物がありません");
+  const j=await kCall("addItems",{date:today(),shop:"",items,history:false},"tkSaveMsg");if(!j)return;
+  $("tkList").innerHTML="";$("tkBox").hidden=true;msg("tkSaveMsg","");
+  msg("tkMsg",`${items.length}品を在庫に入れました（買った記録には入れていません）。続けて別の場所もどうぞ。`,"ok");
+};
+
 
 
 // 試験用（このパソコンで開いたときだけ）
-if(/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) window.__T={calcFuel,odoWarn,monthly,S,parseSpoken,guess,addDays,kanjiNum};
+if(/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) window.__T={calcFuel,odoWarn,monthly,S,parseSpoken,splitSpoken,guess,addDays,kanjiNum};
 
 // ===== はじめ =====
 if(S.token&&S.user) reload(true); else showLogin();
