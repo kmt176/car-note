@@ -108,6 +108,10 @@ pre{white-space:pre-wrap;font-size:12px;background:#F2F4F5;padding:8px;border-ra
 .chip.bad{background:var(--warnbg);color:var(--warn);font-weight:700}
 .chip.soon{background:var(--notebg);color:var(--note);font-weight:700}
 .mini{border:1px solid #C5CDD2;background:#fff;border-radius:8px;padding:6px 10px;font-size:14px;white-space:nowrap}
+.rem{display:flex;align-items:center;gap:3px;margin-top:6px;flex-wrap:wrap}
+.rem button{border:1px solid #C5CDD2;background:#fff;border-radius:999px;padding:4px 7px;font-size:13px;color:var(--ink)}
+.rem button.on{background:var(--main);border-color:var(--main);color:#fff;font-weight:700}
+.rem button.on.low{background:var(--note);border-color:var(--note)}
 .mini.go{border-color:#E3B4AF;color:var(--warn);background:var(--warnbg)}
 .ck{flex:0 0 42px;height:42px;border-radius:50%;border:2px solid var(--main);background:#fff;color:var(--main);font-size:20px;font-weight:700;padding:0}
 .ck.on{background:var(--main);color:#fff}
@@ -334,7 +338,7 @@ pre{white-space:pre-wrap;font-size:12px;background:#F2F4F5;padding:8px;border-ra
         <div id="sWho"></div>
         <p class="small">記録とレシートの写真、買い物の在庫・リストは、管理者（小松）のGoogleドライブに保存されています。ほかの利用者からは見えません。</p>
         <button class="btn red" id="sLogout">ログアウト（この端末から外す）</button>
-        <div style="display:flex;align-items:center;gap:10px"><span class="small">版：2026-11-25 09:10</span><button class="mini" id="appReload">更新</button></div>
+        <div style="display:flex;align-items:center;gap:10px"><span class="small">版：2026-11-25 10:18</span><button class="mini" id="appReload">更新</button></div>
         <p class="small">新しい版が出ているのに古いままのときは「更新」を押します（ホーム画面から開いていると、古い画面が残りやすいです）。記録は消えません。</p>
       </div>
     </section>
@@ -385,6 +389,7 @@ const S={token:store.get("token"),user:store.get("user"),cars:[],fuel:[],car:sto
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmt=(n,d=0)=>n==null||isNaN(n)?"—":Number(n).toLocaleString("ja-JP",{minimumFractionDigits:d,maximumFractionDigits:d});
 const md=s=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||"");return m?`${+m[2]}/${+m[3]}`:s};
+const ymdS=s=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||"");return m?`${m[1]}/${+m[2]}/${+m[3]}`:s};
 const ymdJa=s=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||"");return m?`${m[1]}年${+m[2]}月${+m[3]}日`:s};
 const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`};
 const numv=id=>{const v=$(id).value.trim();return v===""?null:Number(v)};
@@ -812,7 +817,7 @@ function parseSpoken(text,base){
   if((m=/(\S+?)\s*で\s*買(った|いました|う)/.exec(t))){r.shop=m[1].replace(/^[、,]/,"");t=t.replace(m[0]," ")}
   let tok=t.split(/[、,。・\s]+/).map(x=>x.trim()).filter(Boolean);
   if(r.count==null){const i=tok.findIndex(x=>/^\d+(\.\d+)?$/.test(x));if(i>=0){r.count=Number(tok[i]);tok.splice(i,1)}}
-  const name=tok.filter(x=>!/^\d+$/.test(x)).join(" ").replace(/^(を|が|は)\s*/,"").replace(/\s*(を|が|は)$/,"").trim();
+  const name=tok.filter(x=>!/^\d+$/.test(x)).join(" ").replace(/^を\s*/,"").replace(/\s*を$/,"").trim();   // 「が」「は」は消さない（しょうが・はちみつ）
   if(name)r.name=name;
   return r;
 }
@@ -826,9 +831,11 @@ function renderKai(){
   const over=st.filter(s=>left(s)!=null&&left(s)<0), soon=st.filter(s=>left(s)!=null&&left(s)>=0&&left(s)<=2);
   $("kAlert").innerHTML=(over.length?`<div class="msg warn">期限切れ：${over.map(s=>esc(s.name)).join("、")}</div>`:"")+(soon.length?`<div class="msg note">2日以内に期限：${soon.map(s=>esc(s.name)).join("、")}</div>`:"");
   st.sort((a,b)=>(a.expiry||"9999")<(b.expiry||"9999")?-1:(a.expiry||"9999")>(b.expiry||"9999")?1:a.name.localeCompare(b.name,"ja"));
-  const chip=s=>{const l=left(s);return l==null?"":l<0?`<span class="chip bad">期限切れ ${-l}日</span>`:l===0?`<span class="chip bad">今日まで</span>`:l<=2?`<span class="chip soon">あと${l}日</span>`:`<span class="chip">${md(s.expiry)}まで</span>`};
+  const chip=s=>{const l=left(s);return l==null?"":l<0?`<span class="chip bad">期限切れ ${-l}日</span>`:l===0?`<span class="chip bad">今日まで</span>`:l<=2?`<span class="chip soon">あと${l}日</span>`:`<span class="chip">${ymdS(s.expiry)}まで</span>`};
+  const rv=s=>s.remain===50||s.remain===20?s.remain:100;
+  const rem=s=>`<div class="rem" role="group" aria-label="${esc(s.name)}の残り">${[[100,"たっぷり"],[50,"半分"],[20,"少し"]].map(([v,l])=>`<button data-rem="${v}" data-rid="${esc(s.id)}" class="${rv(s)===v?"on"+(v===20?" low":""):""}">${l}</button>`).join("")}</div>`;
   const row=s=>`<div class="item" data-sid="${esc(s.id)}"><div class="ic" aria-hidden="true">${itemIc(s)}</div>
-    <div class="m"><b>${esc(s.name)}</b> <span class="num">×${esc(cnum(s.count))}</span><div class="small">${s.bought?md(s.bought)+"に買った":""}${s.opened?"・開封 "+md(s.opened):""}</div></div>
+    <div class="m"><b>${esc(s.name)}</b> <span class="num">×${esc(cnum(s.count))}</span><div class="small">${s.bought?md(s.bought)+"に買った":""}${s.opened?"・開封 "+md(s.opened):""}</div>${rem(s)}</div>
     <div class="e">${chip(s)}<button class="mini go" data-gone="${esc(s.id)}">なくなった</button></div></div>`;
   const places=S.kPlace?[S.kPlace]:PLACES;
   $("kStockBox").innerHTML=!st.length?`<div class="card empty">まだ何もありません。<br>下の「＋入れる」から、買った物を入れます。</div>`:
@@ -836,7 +843,7 @@ function renderKai(){
   // 買い物リスト
   const sh=k.shop||[], pend=sh.filter(b=>!b.done), done=sh.filter(b=>b.done).sort((a,b)=>a.done<b.done?1:-1);
   $("bList").innerHTML=pend.length?pend.map(b=>`<div class="item"><button class="ck" data-ck="${esc(b.id)}" aria-label="${esc(b.name)}を買った"></button>
-    <div class="m"><b>${esc(b.name)}</b><div class="small">${b.reason==="なくなった"?'<span class="chip soon">なくなった</span>':'<span class="chip">手で足した</span>'} ${md(b.added)}</div></div>
+    <div class="m"><b>${esc(b.name)}</b><div class="small">${b.reason==="なくなった"||b.reason==="残りわずか"?`<span class="chip soon">${esc(b.reason)}</span>`:'<span class="chip">手で足した</span>'} ${md(b.added)}</div></div>
     <button class="x" data-bdel="${esc(b.id)}" aria-label="${esc(b.name)}をリストから消す">✕</button></div>`).join(""):`<div class="empty">買う物はありません</div>`;
   $("bDoneBox").hidden=!done.length;
   const stocked=b=>st.some(s=>kkey(s.name)===kkey(b.name)&&s.bought>=String(b.done).slice(0,10));
@@ -854,6 +861,8 @@ function renderKai(){
 $("kFilter").onclick=e=>{const b=e.target.closest("[data-f]");if(!b)return;S.kPlace=b.dataset.f;renderKai()};
 $("kStockBox").onclick=e=>{
   const g=e.target.closest("[data-gone]");if(g){goneStock(g.dataset.gone);return}
+  const rb=e.target.closest("[data-rem]");if(rb){setRemain(rb.dataset.rid,Number(rb.dataset.rem));return}
+  if(e.target.closest(".rem"))return;
   const it=e.target.closest("[data-sid]");if(it)editStock(it.dataset.sid);
 };
 async function kCall(action,body,msgId){
@@ -866,6 +875,13 @@ async function goneStock(id){
   const j=await kCall("gone",{id},"kTopMsg");if(!j)return;
   $("dlg").hidden=true;$("dlgBody").innerHTML="";
   msg("kTopMsg",`「${esc(s.name)}」を在庫から外し、${j.added?"買い物リストに入れました":"（買い物リストにはもう入っています）"}。`,"ok");
+}
+async function setRemain(id,v){
+  const s=S.kai.stock.find(x=>x.id===id);if(!s)return;
+  if((s.remain===50||s.remain===20?s.remain:100)===v)return;
+  const j=await kCall("remain",{id,remain:v},"kTopMsg");if(!j)return;
+  const l={100:"たっぷり",50:"半分",20:"少し"}[v];
+  msg("kTopMsg",`「${esc(s.name)}」の残りを「${l}」にしました。${v===20?(j.added?"買い物リストにも入れました。":"（買い物リストにはもう入っています）"):""}`,"ok");
 }
 function editStock(id){
   const s=S.kai.stock.find(x=>x.id===id);if(!s)return;
